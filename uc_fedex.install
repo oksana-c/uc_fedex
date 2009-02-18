@@ -1,0 +1,38 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_install()
+ *
+ * Creates database tables needed by this module.
+ */
+function uc_fedex_install() {
+}
+
+
+/**
+ * Implementation of hook_uninstall()
+ *
+ * Removes all tables and variables inserted into the
+ * database by this module.
+ */
+function uc_fedex_uninstall() {
+
+  /* Remove all module variables from the database */
+  variable_del('uc_fedex_user_credential_key');
+  variable_del('uc_fedex_user_credential_password');
+  variable_del('uc_fedex_account_number');
+  variable_del('uc_fedex_meter_number');
+  variable_del('uc_fedex_server_role');
+
+  variable_del('uc_fedex_services');
+  variable_del('uc_fedex_all_in_one');
+  variable_del('uc_fedex_quote_type');
+  variable_del('uc_fedex_dropoff_type');
+  variable_del('uc_fedex_package_type');
+
+  variable_del('uc_fedex_rate_markup');
+  variable_del('uc_fedex_rate_markup_type');
+  variable_del('uc_fedex_weight_markup');
+  variable_del('uc_fedex_weight_markup_type');
+}
