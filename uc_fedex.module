@@ -9,11 +9,6 @@
  * to get rates for small package shipments.  Implements a SOAP Web Service
  * client.
  *
- * Because a large part of this module was borrowed from uc_usps.module,
- * bug fixes and improvements made to uc_usps.module should be folded into
- * here also.
- *
- * @author Shipping framework, uc_usps and uc_ups modules written by Lyle Mantooth.
  * @author FedEx specific stuff in this module coded by Tim Rohaly.
  * @version $Id$
  */
@@ -35,9 +30,11 @@ ini_set("soap.wsdl_cache_enabled", "1");
  * if Drupal intends to cache menu or not - different results may be
  * returned for either case.
  *
- * @param may_cache true when Drupal is building menus it will cache
+ * @param may_cache
+ *   TRUE when Drupal is building menus it will cache
  *
- * @return An array with the menu path, callback, and parameters.
+ * @return
+ *   An array with the menu path, callback, and parameters.
  */
 function uc_fedex_menu($may_cache) {
   $items = array();
@@ -51,6 +48,9 @@ function uc_fedex_menu($may_cache) {
       'callback arguments' => 'uc_fedex_admin_settings',
       'type'               => MENU_LOCAL_TASK,
     );
+  }
+  else {
+    drupal_add_css(drupal_get_path('module', 'uc_fedex') .'/uc_fedex.css');
   }
 
   return $items;
@@ -67,10 +67,11 @@ function uc_fedex_menu($may_cache) {
  *
  * Connect FedEx quote action and event.
  *
- * @return Workflow_ng configuration array
+ * @return
+ *   Workflow_ng configuration array
  */
 function uc_fedex_configuration() {
-  $enabled = variable_get('uc_quote_enabled', array('fedex' => true));
+  $enabled = variable_get('uc_quote_enabled', array('fedex' => TRUE));
 
   $configurations = array(
     'uc_fedex_get_quote' => array(
@@ -98,7 +99,8 @@ function uc_fedex_configuration() {
 /**
  * Implementation of Ubercart's hook_shipping_type().
  *
- * @return Array of package types for FedEx shipping method
+ * @return
+ *   Array of package types for FedEx shipping method
  */
 function uc_fedex_shipping_type() {
   $weight = variable_get('uc_quote_type_weight', array('small_package' => 0));
@@ -118,10 +120,11 @@ function uc_fedex_shipping_type() {
 /**
  * Implementation of Ubercart's hook_shipping_method().
  *
- * @return Array of FedEx shipping services
+ * @return
+ *   Array of FedEx shipping services
  */
 function uc_fedex_shipping_method() {
-  $enabled = variable_get('uc_quote_enabled', array('fedex' => true));
+  $enabled = variable_get('uc_quote_enabled', array('fedex' => TRUE));
   $weight  = variable_get('uc_quote_method_weight', array('fedex' => 0));
 
   $methods = array(
@@ -149,7 +152,8 @@ function uc_fedex_shipping_method() {
  * Lets the administrator know if the FedEx account information has not been
  * filled out.
  *
- * @return Array of error or status messages relating to configuration of FedEx module
+ * @return
+ *   Array of error or status messages relating to configuration of FedEx module
  */
 function uc_fedex_store_status() {
   $messages = array();
@@ -169,7 +173,7 @@ function uc_fedex_store_status() {
     $messages[] = array(
       'status' => 'error',
       'title'  => t('FedEx Ship Manager'),
-      'desc'   => t('More information is needed to access FedEx Ship Manager. Please enter it ') . l('here', 'admin/store/settings/quotes/methods/fedex') .'.',
+      'desc'   => t('More information is needed to access FedEx Ship Manager. Please enter it !link.', array('!link' => l('here', 'admin/store/settings/quotes/methods/fedex'))),
     );
   }
 
@@ -190,7 +194,8 @@ function uc_fedex_store_status() {
  * Records FedEx account information neccessary to use service. Allows testing
  * or production mode. Configures which FedEx services are quoted to customers.
  *
- * @return Forms for store administrator to set configuration options.
+ * @return
+ *   Forms for store administrator to set configuration options.
  */
 function uc_fedex_admin_settings() {
 
@@ -208,7 +213,7 @@ function uc_fedex_admin_settings() {
     '#type'          => 'textfield',
     '#title'         => t('FedEx Web Services API User Key'),
     '#default_value' => variable_get('uc_fedex_user_credential_key', ''),
-    '#required'      => true,
+    '#required'      => TRUE,
   );
 
   //
@@ -221,23 +226,23 @@ function uc_fedex_admin_settings() {
     '#type'          => 'textfield',
     '#title'         => t('FedEx Web Services API Password'),
     '#default_value' => variable_get('uc_fedex_user_credential_password', ''),
-    '#required'      => true,
+    '#required'      => TRUE,
   );
 
   /* Form to set user account number */
   $form['uc_fedex_credentials']['uc_fedex_account_number'] = array(
     '#type'          => 'textfield',
     '#title'         => t('FedEx Account #'),
-    '#default_value' => variable_get('uc_fedex_account_number', ''),
-    '#required'      => true,
+    '#default_value' => variable_get('uc_fedex_account_number', 0),
+    '#required'      => TRUE,
   );
 
   /* Form to set user meter number */
   $form['uc_fedex_credentials']['uc_fedex_meter_number'] = array(
     '#type'          => 'textfield',
     '#title'         => t('FedEx Meter #'),
-    '#default_value' => variable_get('uc_fedex_meter_number', ''),
-    '#required'      => true,
+    '#default_value' => variable_get('uc_fedex_meter_number', 0),
+    '#required'      => TRUE,
   );
 
   /*
@@ -297,6 +302,17 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Package Type.  It is assumed that all your packages are using the same packaging.'),
   );
 
+  /* Form to select Residential/Commercial destination address */
+  $form['uc_fedex_residential_quotes'] = array(
+    '#type'          => 'radios',
+    '#title'         => t('Quote rates assuming destination is a'),
+    '#default_value' => variable_get('uc_fedex_residential_quotes', 1),
+    '#options'       => array(
+      0 => t('Commercial address'),
+      1 => t('Residential address (extra fees)'),
+    ),
+  );
+
   /* Container for markup forms */
   $form['uc_fedex_markups'] = array(
     '#type'         => 'fieldset',
@@ -346,6 +362,7 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Markup FedEx shipping weight before quote by weight amount, percentage, or multiplier.'),
   );
 
+  /* Form to select packaging type */
   $form['uc_fedex_all_in_one'] = array(
     '#type'          => 'radios',
     '#title'         => t('Number of Packages'),
@@ -366,9 +383,12 @@ function uc_fedex_admin_settings() {
  *
  * Require password only if it hasn't been set.
  *
- * @param form_id Form identifier  
- * @param form_value Values entered into form
- * @param form Form itself
+ * @param form_id
+ *   Form identifier  
+ * @param form_value
+ *   Values entered into form
+ * @param form
+ *   Form itself
  */
 function uc_fedex_admin_settings_validate($form_id, $form_values, $form) {
   $old_password = variable_get('uc_fedex_user_credential_password', '');
@@ -391,13 +411,17 @@ function uc_fedex_admin_settings_validate($form_id, $form_values, $form) {
 /**
  * Callback for retrieving a FedEx shipping quote.
  *
- * Requests a quote of all available FedEx services.  Returned quote
- * is parsed and only the selected services are presented to the user.
+ * Requests a quote of all available FedEx services.  Quote returned
+ * from the FedEx server is parsed and only the selected services are
+ * presented to the user.
  *
- * @param $products Array of cart contents.
- * @param $details  Order details other than product information.
+ * @param $products
+ *   Array of cart contents.
+ * @param $details
+ *   Order details other than product information.
  *
- * @return JSON object containing rate, error, and debugging information.
+ * @return
+ *   JSON object containing rate, error, and debugging information.
  */
 function uc_fedex_quote($products, $details) {
 
@@ -423,7 +447,14 @@ function uc_fedex_quote($products, $details) {
     $country_data = db_fetch_object($country);
     $destination->country_iso_code_2 = $country_data->country_iso_code_2;
   }
-  $destination->residence = TRUE;
+
+  /* Load preference for Residence/Commercial destination address */
+  if (variable_get('uc_fedex_residential_quotes', 1)) {
+    $destination->residence = TRUE;
+  }
+  else {
+    $destination->residence = FALSE;
+  }
 
   /* Call the method that does the actual SOAP request to the FedEx Server */
   /* Response contains all available services and rates                    */
@@ -435,6 +466,14 @@ function uc_fedex_quote($products, $details) {
 
   $quotes = array();
   $method = uc_fedex_shipping_method();
+
+  if (!isset($response->Options)) {
+    // Memphis, we have a problem ...
+    // Error returned from FedEx server - will print in $message box
+    // Don't even try to extract a quote from the response, just return
+    // empty quote array.
+    return array();
+  }
 
   /* Test responses to see if we are interested in that service */
   foreach ($response->Options as $options) {
@@ -456,11 +495,13 @@ function uc_fedex_quote($products, $details) {
       $quotes[] = array(
         'rate'         => $rate,
         'format'       => uc_currency_format($rate),
-        'option_label' => $method['fedex']['quote']['accessorials'][$service],
+        'option_label' => theme('uc_fedex_option_label', $fedex_services[$service], $packages),  // cart pane
+        'label'        => $fedex_services[$service],  // cart review pane
+
       );
     }
   }
-  if (user_access('configure quotes') && variable_get('uc_quote_display_debug', false)) {
+  if (user_access('configure quotes') && variable_get('uc_quote_display_debug', FALSE)) {
 //  $quotes['data']['debug'] = htmlentities($response).'<br />';
   }
 
@@ -477,19 +518,23 @@ function uc_fedex_quote($products, $details) {
  * SOAP call parameters are set in the order they appear in the WSDL file
  * Associative array of DOM returned.
  *
- * @param $packages      Array of packages received from the cart.
- * @param $origin        Delivery origin address information.
- * @param $destination   Delivery destination address information.
+ * @param $packages
+ *   Array of packages received from the cart.
+ * @param $origin
+ *   Delivery origin address information.
+ * @param $destination
+ *   Delivery destination address information.
  *
- * @return Associative array mirroring contents of SOAP object returned from server.
+ * @return
+ *   Associative array mirroring contents of SOAP object returned from server.
  */
 function uc_fedex_rate_request($packages, $origin, $destination) {
 
   /* Set up SOAP call. */
   /*  Allow tracing so details of request can be retrieved for error logging */
-  $client = new SoapClient(drupal_get_path('module', 'uc_fedex') .
-              '/wsdl-' . variable_get('uc_fedex_server_role', 'testing') .
-              '/RateAvailableServicesService_v2.wsdl', array('trace' => 1));
+  $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
+              .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
+              .'/RateAvailableServicesService_v2.wsdl', array('trace' => 1));
 
   /* FedEx user key and password filled in by user on admin form */
   $request['WebAuthenticationDetail'] = array(
@@ -542,7 +587,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   // for all avaiable services, then filtered before presenting the customer
   // with options.
 
-  /* If CarrierCode is left out, all available services will quote */
+  /* If CarrierCode is left out, all available services will be quoted */
   //$request['CarrierCode'] = 'FDXE';
 
   /* Service type - valid codes STANDARD_OVERNIGHT, FEDEX_GROUND, ... */
@@ -559,7 +604,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
 // cutoff times, commits store owner to exact ship date, etc.
 // Probably have to make an admin menu option with cutoff time, after
 // which ShipDate becomes "tomorrow" unless of course tomorrow is a
-// weekend when you're closed...  But this shouldn't really affect the rate
+// weekend when you're closed...  But this shouldn't affect the rate
   $request['ShipDate'] = date('Y-m-d');
 
   // Note that ACCOUNT rates *require* a valid account number
@@ -574,7 +619,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   // Need to iterate over $packages to account for multi-package
   // shipments.  Right now everything is assumed to be one package.
 
-  $PassRateRequestPackageSummary = true;
+  $PassRateRequestPackageSummary = TRUE;
 
   // Passing multi piece shipment rate request (by setting PieceCount > 1)
   if ($PassRateRequestPackageSummary) {
@@ -599,9 +644,9 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
         'Weight'       => array('Value'  => 10.0, 'Units'   => 'LB'),
         'InsuredValue' => array('Amount' => 100, 'Currency' => 'USD'),
         'Dimensions'   => array(
-          'Length' => '14',
-          'Width'  => '14',
-          'Height' => '14',
+          'Length' => '1',
+          'Width'  => '1',
+          'Height' => '1',
           'Units'  => 'IN', // valid code IN and CM
         ),
         'SpecialServicesRequested' => array(
@@ -617,12 +662,6 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   try {
     $response = $client ->__soapCall("rateAvailableServices", array('parameters' => $request));
 
-//    $ty = _uc_fedex_services();
-//    foreach ($response->Options as $options) {
-//      drupal_set_message('<pre>' . $ty[$options->ServiceDetail->ServiceType] . ' -- ' . uc_currency_format($options->RatedShipmentDetails[0]->ShipmentRateDetail->TotalNetCharge->Amount) . '</pre>');
-//    }
-//  drupal_set_message('<pre>' . check_plain(var_export($response, true)) . '</pre>');
-
     if ($response->HighestSeverity != 'FAILURE' &&
         $response->HighestSeverity != 'ERROR')     {
         print_request_response($client);
@@ -631,7 +670,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
       drupal_set_message('Error in processing FedEx Shipping Quote transaction.', 'error');
       foreach ($response->Notifications as $notification) {
         if (is_array($response->Notifications)) {
-          drupal_set_message($notification->Severity . ': ' . $notification->Message, 'error');
+          drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
         }
         else {
           drupal_set_message($notification, 'error');
@@ -641,7 +680,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     return $response;
   }
   catch (SoapFault $exception) {
-    drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>' . $exception->faultcode. '<br /><b>String:</b>' . $exception->faultstring. '<br />', 'error');
+    drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>'. $exception->faultcode .'<br /><b>String:</b>'. $exception->faultstring .'<br />', 'error');
     // what else needs to be done here if FedEx quote fails?  What to display
     // to customer?
   }
@@ -655,17 +694,19 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
  * SOAP call parameters are set in the order they appear in the WSDL file
  * Associative array of DOM returned.
  *
- * @param $tracking_number      FedEx Tracking number
+ * @param $tracking_number
+ *   FedEx Tracking number
  *
- * @return Associative array mirroring contents of SOAP object returned from server.
+ * @return
+ *   Associative array mirroring contents of SOAP object returned from server.
  */
 function uc_fedex_tracking_request($tracking_number) {
 
   /* Set up SOAP call. */
   /*  Allow tracing so details of request can be retrieved for error logging */
-  $client = new SoapClient(drupal_get_path('module', 'uc_fedex') .
-              '/wsdl-' . variable_get('uc_fedex_server_role', 'testing') .
-              '/TrackService_v1.wsdl', array('trace' => 1));
+  $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
+              .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
+              .'/TrackService_v1.wsdl', array('trace' => 1));
 
   /* FedEx user key and password filled in by user on admin form */
   $request['TrackRequest']['WebAuthenticationDetail'] = array(
@@ -713,7 +754,7 @@ function uc_fedex_tracking_request($tracking_number) {
 //    foreach ($response->Options as $options) {
 //      drupal_set_message('<pre>' . $ty[$options->ServiceDetail->ServiceType] . ' -- ' . uc_currency_format($options->RatedShipmentDetails[0]->ShipmentRateDetail->TotalNetCharge->Amount) . '</pre>');
 //    }
-//  drupal_set_message('<pre>' . check_plain(var_export($response, true)) . '</pre>');
+//  drupal_set_message('<pre>' . check_plain(var_export($response, TRUE)) . '</pre>');
 
     if ($response->TrackReply->HighestSeverity != 'FAILURE' &&
         $response->TrackReply->HighestSeverity != 'ERROR')     {
@@ -743,7 +784,7 @@ function uc_fedex_tracking_request($tracking_number) {
       drupal_set_message('Error in processing FedEx tracking transaction.', 'error');
       foreach ($response->TrackReply->Notifications as $notification) {
         if (is_array($response->TrackReply->Notifications)) {
-          drupal_set_message($notification->Severity . ': ' . $notification->Message, 'error');
+          drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
         }
         else {
           drupal_set_message($notification, 'error');
@@ -753,7 +794,7 @@ function uc_fedex_tracking_request($tracking_number) {
     return $response;
   }
   catch (SoapFault $exception) {
-    drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>' . $exception->faultcode. '<br /><b>String:</b>' . $exception->faultstring. '<br />', 'error');
+    drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>'. $exception->faultcode .'<br /><b>String:</b>'. $exception->faultstring .'<br />', 'error');
     // what else needs to be done here if FedEx quote fails?  What to display
     // to customer?
   }
@@ -763,9 +804,11 @@ function uc_fedex_tracking_request($tracking_number) {
 /**
  * Modify the rate received from FedEx before displaying to the customer.
  *
- * @param rate Shipping rate without any rate markup
+ * @param rate
+ *   Shipping rate without any rate markup
  *
- * @return Shipping rate after markup
+ * @return
+ *   Shipping rate after markup
  */
 function uc_fedex_rate_markup($rate) {
   $markup = variable_get('uc_fedex_rate_markup', '0');
@@ -775,8 +818,10 @@ function uc_fedex_rate_markup($rate) {
     switch ($type) {
       case 'percentage':
         return $rate + $rate * floatval(trim($markup)) / 100;
+
       case 'multiplier':
         return $rate * floatval(trim($markup));
+
       case 'currency':
         return $rate + floatval(trim($markup));
     }
@@ -790,9 +835,11 @@ function uc_fedex_rate_markup($rate) {
 /**
  * Modify the weight of shipment before sending to FedEx for a quote.
  *
- * @param weight Shipping weight without any weight markup
+ * @param weight
+ *   Shipping weight without any weight markup
  *
- * @return Shipping weight after markup
+ * @return
+ *   Shipping weight after markup
  */
 function uc_fedex_weight_markup($weight) {
   $markup = variable_get('uc_fedex_weight_markup', '0');
@@ -802,8 +849,10 @@ function uc_fedex_weight_markup($weight) {
     switch ($type) {
       case 'percentage':
         return $weight + $weight * floatval(trim($markup)) / 100;
+
       case 'multiplier':
         return $weight * floatval(trim($markup));
+
       case 'mass':
         return $weight + floatval(trim($markup));
     }
@@ -817,25 +866,30 @@ function uc_fedex_weight_markup($weight) {
 /**
  * Puts everything in one package, for now.
  *
- * @param products An array of nodes of type product
+ * @param products
+ *   An array of nodes of type product
  *
- * @return An array of package objects, each containing one or more of the products
+ * @return
+ *   An array of package objects, each containing one or more of the products
  */
 function _uc_fedex_package_products($products) {
   $packages = array();
 
 //Always one package for now...
-//if (variable_get('uc_fedex_all_in_one', true)) {
-  if (true) {
+//if (variable_get('uc_fedex_all_in_one', TRUE)) {
+  if (TRUE) {
     $package  = new stdClass();
     foreach ($products as $product) {
       $package->price  += $product->price  * $product->qty;
       $package->weight += $product->weight * $product->qty * uc_weight_conversion($product->weight_units, 'lb');
     }
+
     /* Markup weight on a per-package basis before sending out for a quote */
     $package->weight = uc_fedex_weight_markup($package->weight);
+
     /* Round up to nearest lb for FedEx weight */
     $package->shipweight = ceil($package->weight);
+
     $package->qty        = 1;
     // What package descriptions do we need here?
     //$package->container = 'RECTANGULAR';
@@ -851,7 +905,8 @@ function _uc_fedex_package_products($products) {
 /**
  * Convenience function to get FedEx codes for their package types.
  *
- * @return An array of human-friendly names for the different FedEx package types 
+ * @return
+ *   An array of human-friendly names for the different FedEx package types 
  */
 function _uc_fedex_package_types() {
   return array(
@@ -871,7 +926,8 @@ function _uc_fedex_package_types() {
  * This should probably be sucked out of the WSDL file, to be sure
  * the options stay correct and up-to-date.
  *
- * @return An array of human-friendly names for the different FedEx service codes
+ * @return
+ *   An array of human-friendly names for the different FedEx service codes
  */
 function _uc_fedex_services() {
   return array(
@@ -901,7 +957,8 @@ function _uc_fedex_services() {
 /**
  * Convenience function to get FedEx codes for special services options.
  *
- * @return An array of human-friendly names for the different FedEx special services options codes
+ * @return
+ *   An array of human-friendly names for the different FedEx special services options codes
  */
 function _uc_fedex_shipment_special_types() {
   return array(
@@ -930,7 +987,8 @@ function _uc_fedex_shipment_special_types() {
  * This should probably be sucked out of the WSDL file, to be sure
  * the options stay correct and up-to-date.
  *
- * @return An array of human-friendly names for the different FedEx pickup/dropoff option codes
+ * @return
+ *   An array of human-friendly names for the different FedEx pickup/dropoff option codes
  */
 function _uc_fedex_dropoff_types() {
   return array(
@@ -944,33 +1002,18 @@ function _uc_fedex_dropoff_types() {
 
 
 /**
- * Convenience function for select form elements.
- *
- * @param fedex_service FedEx service type code.
- * 
- * @return Carrier abbreviation code for the specified FedEx service
- */
-function _uc_fedex_carrier($fedex_service) {
-  if (($fedex_service == 'FEDEX_GROUND') ||
-      ($fedex_service == 'GROUND_HOME_DELIVERY')) {
-    $carrier = 'FDXG';
-  }
-  else {
-    $carrier = 'FDXE';
-  }
-  return $carrier;
-}
-
-
-/**
  * Callback for uasort().
  *
- * Sorts service rates by increasing price.
+ * Sorts service rates by increasing price.  This will be replaced by
+ * uc_quote_price_sort() in Ubercart 1.0 Beta 8 and above.
  *
- * @param a Array element
- * @param b Array element
+ * @param a
+ *   Array element
+ * @param b
+ *   Array element
  * 
- * @return Return code denoting which of the two elements is greater
+ * @return
+ *   Return code denoting which of the two elements is greater
  */
 function _uc_fedex_sort_quotes($a, $b) {
   $ar = $a['rate'];
@@ -986,15 +1029,44 @@ function _uc_fedex_sort_quotes($a, $b) {
 
 /**
  * Print SOAP request and response, iff allowed by user access permissions.
- * To view transaction details, set display debug true in
+ * To view transaction details, set display debug TRUE in
  * admin/store/settings/quotes/edit
  *
- * @param client SOAP client object containing transaction history
+ * @param client
+ *   SOAP client object containing transaction history
  */
 function print_request_response($client) {
-  if (user_access('configure quotes') && variable_get('uc_quote_display_debug', false)) {
-    drupal_set_message('<h2>Transaction processed successfully.</h2>');
-    drupal_set_message('<h2>Request: </h2><pre>'  . check_plain($client->__getLastRequest())  . '</pre>');
-    drupal_set_message('<h2>Response: </h2><pre>' . check_plain($client->__getLastResponse()) . '</pre>');
+  if (user_access('configure quotes') && variable_get('uc_quote_display_debug', FALSE)) {
+    drupal_set_message('<h2>FedEx Rate Quote Transaction processed successfully.</h2>'.
+                       '<h3>Request: </h3><pre>'.
+                       check_plain($client->__getLastRequest())  .'</pre>'.
+                       '<h3>Response: </h3><pre>'.
+                       check_plain($client->__getLastResponse()) .'</pre>');
   }
 }
+
+
+/**
+ * Theme function to format the FedEx service name and rate amount
+ * line-item shown to the customer.
+ *
+ * @param $service
+ *   The FedEx service name
+ * @param $packages
+ *   Package information
+ * @ingroup themeable
+ */
+function theme_uc_fedex_option_label($service, $packages) {
+  // Start with FedEx logo
+  $output  = '<img class="fedex_logo" src="'. base_path() . drupal_get_path('module', 'uc_fedex') .'/uc_fedex_logo.gif" alt="FedEx Logo" />'
+;
+
+  // Add FedEx product (service) name
+  $output .= $service;
+
+  // Add package information
+  //$output .= ' ('. format_plural(count($packages), '1 package', '@count packages') .')';
+
+  return $output;
+}
+
