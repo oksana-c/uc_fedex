@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2009-02-26 15:49-0600\n"
+"POT-Creation-Date: 2009-02-26 18:56-0600\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -207,159 +207,159 @@ msgstr ""
 msgid "Password field is required."
 msgstr ""
 
-#: uc_fedex.module:913
+#: uc_fedex.module:914
 msgid "Your Packaging"
 msgstr ""
 
-#: uc_fedex.module:914
+#: uc_fedex.module:915
 msgid "FedEx Envelope"
 msgstr ""
 
-#: uc_fedex.module:915
+#: uc_fedex.module:916
 msgid "FedEx Pak"
 msgstr ""
 
-#: uc_fedex.module:916
+#: uc_fedex.module:917
 msgid "FedEx Box"
 msgstr ""
 
-#: uc_fedex.module:917
+#: uc_fedex.module:918
 msgid "FedEx Tube"
 msgstr ""
 
-#: uc_fedex.module:918
+#: uc_fedex.module:919
 msgid "FedEx 10kg Box"
 msgstr ""
 
-#: uc_fedex.module:919
+#: uc_fedex.module:920
 msgid "FedEx 25kg Box"
 msgstr ""
 
-#: uc_fedex.module:934
+#: uc_fedex.module:935
 msgid "FedEx Ground -- Commercial Address"
 msgstr ""
 
-#: uc_fedex.module:935
+#: uc_fedex.module:936
 msgid "FedEx Ground -- Residence Address"
 msgstr ""
 
-#: uc_fedex.module:936
+#: uc_fedex.module:937
 msgid "FedEx Standard Overnight"
 msgstr ""
 
-#: uc_fedex.module:937
+#: uc_fedex.module:938
 msgid "FedEx Priority Overnight"
 msgstr ""
 
-#: uc_fedex.module:938
+#: uc_fedex.module:939
 msgid "FedEx First Overnight"
 msgstr ""
 
-#: uc_fedex.module:939
+#: uc_fedex.module:940
 msgid "FedEx 2nd Day"
 msgstr ""
 
-#: uc_fedex.module:940
+#: uc_fedex.module:941
 msgid "FedEx Express Saver"
 msgstr ""
 
-#: uc_fedex.module:941
+#: uc_fedex.module:942
 msgid "FedEx 1-Day Freight"
 msgstr ""
 
-#: uc_fedex.module:942
+#: uc_fedex.module:943
 msgid "FedEx 2-Day Freight"
 msgstr ""
 
-#: uc_fedex.module:943
+#: uc_fedex.module:944
 msgid "FedEx 3-Day Freight"
 msgstr ""
 
-#: uc_fedex.module:944
+#: uc_fedex.module:945
 msgid "FedEx Europe First International Priority"
 msgstr ""
 
-#: uc_fedex.module:945
+#: uc_fedex.module:946
 msgid "FedEx International Economy"
 msgstr ""
 
-#: uc_fedex.module:946
+#: uc_fedex.module:947
 msgid "FedEx International Economy Freight"
 msgstr ""
 
-#: uc_fedex.module:947
+#: uc_fedex.module:948
 msgid "FedEx International Economy Distribution"
 msgstr ""
 
-#: uc_fedex.module:948
+#: uc_fedex.module:949
 msgid "FedEx International Priority"
 msgstr ""
 
-#: uc_fedex.module:949
+#: uc_fedex.module:950
 msgid "FedEx International Priority Freight"
 msgstr ""
 
-#: uc_fedex.module:950
+#: uc_fedex.module:951
 msgid "FedEx International Priority Distribution"
 msgstr ""
 
-#: uc_fedex.module:951;965;971;972;973;974;975;976;979
+#: uc_fedex.module:952;966;972;973;974;975;976;977;980
 msgid "FedEx International First"
 msgstr ""
 
-#: uc_fedex.module:952
+#: uc_fedex.module:953
 msgid "FedEx International Distribution Freight"
 msgstr ""
 
-#: uc_fedex.module:966
+#: uc_fedex.module:967
 msgid "COD Shipment"
 msgstr ""
 
-#: uc_fedex.module:967
+#: uc_fedex.module:968
 msgid "Dangerous Goods"
 msgstr ""
 
-#: uc_fedex.module:968
+#: uc_fedex.module:969
 msgid "Dry Ice"
 msgstr ""
 
-#: uc_fedex.module:969
+#: uc_fedex.module:970
 msgid "E-Mail Notification"
 msgstr ""
 
-#: uc_fedex.module:970
+#: uc_fedex.module:971
 msgid "Future Day Shipment"
 msgstr ""
 
-#: uc_fedex.module:977
+#: uc_fedex.module:978
 msgid "Saturday Delivery"
 msgstr ""
 
-#: uc_fedex.module:978
+#: uc_fedex.module:979
 msgid "Saturday Pickup"
 msgstr ""
 
-#: uc_fedex.module:980
+#: uc_fedex.module:981
 msgid "Weekday delivery "
 msgstr ""
 
-#: uc_fedex.module:995
+#: uc_fedex.module:996
 msgid "Dropoff at FedEx Business Service Center"
 msgstr ""
 
-#: uc_fedex.module:996
+#: uc_fedex.module:997
 msgid "Dropoff at FedEx Drop Box"
 msgstr ""
 
-#: uc_fedex.module:997
+#: uc_fedex.module:998
 msgid "Regularly scheduled Pickup from your location"
 msgstr ""
 
-#: uc_fedex.module:998
+#: uc_fedex.module:999
 msgid "One-time Pickup request"
 msgstr ""
 
-#: uc_fedex.module:999
+#: uc_fedex.module:1000
 msgid "Dropoff at FedEx Staffed Location"
 msgstr ""
 

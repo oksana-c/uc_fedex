@@ -491,13 +491,14 @@ function uc_fedex_quote($products, $details) {
         $ratedetail = $options->RatedShipmentDetails[0];
       }
       // need to handle dimensional rates, other modifiers.
-      $rate = uc_fedex_rate_markup($ratedetail->ShipmentRateDetail->TotalNetCharge->Amount);   // Markup rate before customer sees it
-      $quotes[] = array(
+
+      // Markup rate before customer sees it
+      $rate = uc_fedex_rate_markup($ratedetail->ShipmentRateDetail->TotalNetCharge->Amount);
+
+      $quotes[$service] = array(
         'rate'         => $rate,
         'format'       => uc_currency_format($rate),
-        'option_label' => theme('uc_fedex_option_label', $fedex_services[$service], $packages),  // cart pane
-        'label'        => $fedex_services[$service],  // cart review pane
-
+        'option_label' => theme('uc_fedex_option_label', $method['fedex']['quote']['accessorials'][$service], $packages),  // cart pane
       );
     }
   }
@@ -1061,8 +1062,9 @@ function theme_uc_fedex_option_label($service, $packages) {
   $output  = '<img class="fedex_logo" src="'. base_path() . drupal_get_path('module', 'uc_fedex') .'/uc_fedex_logo.gif" alt="FedEx Logo" />'
 ;
 
-  // Add FedEx product (service) name
-  $output .= $service;
+  // Add FedEx product (service) name, removing the first five characters
+  // (== 'FedEx ') because these replicate the logo image
+  $output .= substr($service, 6);
 
   // Add package information
   //$output .= ' ('. format_plural(count($packages), '1 package', '@count packages') .')';
