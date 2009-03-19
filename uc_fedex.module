@@ -506,7 +506,9 @@ function uc_fedex_quote($products, $details) {
 //  $quotes['data']['debug'] = htmlentities($response).'<br />';
   }
 
-  uasort($quotes, '_uc_fedex_sort_quotes');
+  // Sort rate quotes in order of increasing price
+  uasort($quotes, 'uc_quote_price_sort');
+
   return $quotes;
 }
 
@@ -1003,32 +1005,6 @@ function _uc_fedex_dropoff_types() {
 
 
 /**
- * Callback for uasort().
- *
- * Sorts service rates by increasing price.  This will be replaced by
- * uc_quote_price_sort() in Ubercart 1.0 Beta 8 and above.
- *
- * @param a
- *   Array element
- * @param b
- *   Array element
- * 
- * @return
- *   Return code denoting which of the two elements is greater
- */
-function _uc_fedex_sort_quotes($a, $b) {
-  $ar = $a['rate'];
-  $br = $b['rate'];
-  if ($ar == $br) {
-    return 0;
-  }
-  else {
-    return ($ar < $br) ? -1 : 1;
-  }
-}
-
-
-/**
  * Print SOAP request and response, iff allowed by user access permissions.
  * To view transaction details, set display debug TRUE in
  * admin/store/settings/quotes/edit
@@ -1071,4 +1047,3 @@ function theme_uc_fedex_option_label($service, $packages) {
 
   return $output;
 }
-
