@@ -1035,10 +1035,10 @@ function print_request_response($client) {
  */
 function theme_uc_fedex_option_label($service, $packages) {
   // Start with FedEx logo
-  $output  = '<img class="fedex_logo" src="'. base_path() . drupal_get_path('module', 'uc_fedex') .'/uc_fedex_logo.gif" alt="FedEx Logo" />'
+  $output  = '<img class="fedex-logo" src="'. base_path() . drupal_get_path('module', 'uc_fedex') .'/uc_fedex_logo.gif" alt="FedEx Logo" />'
 ;
 
-  // Add FedEx product (service) name, removing the first five characters
+  // Add FedEx product (service) name, removing the first six characters
   // (== 'FedEx ') because these replicate the logo image
   $output .= substr($service, 6);
 
