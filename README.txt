@@ -50,6 +50,17 @@ multiplier, or an addition. The rate markup is used to compensate for handling
 and other expenses you may incur that you want to lump in with the shipping
 cost.  
 
+The admin has the option of choosing Residential or Commercial quotes.
+Shipping using the FedEx residential service costs a little more.  Shipping
+to a residential address using the *commercial* service costs more plus
+there's an added penalty.  So if you ship mainly to residences (whether
+there is a business at that residence or not), use the Residential quotes
+(default).  If your customers are mostly or all commercial addresses, you
+may want to use the commercial quotes to present a slightly lower rate to
+your customer.  Note that this selection does not actually affect the amount
+you pay to FedEx for the package, but it DOES affect how much you collect
+from your customer for shipping charges.
+
 Tracking information may be obtained using the uc_fedex_tracking_request()
 function.  An example of how to use this function is in the code comments.
 
@@ -66,9 +77,10 @@ PHP 5 is widely available and several years old already, I have decided that
 it doesn't make sense to try to force things to work with PHP 4.  So if you
 need to use this module, you'll have to be running PHP 5.
 
-I've tested it ONLY with Drupal 5.3 and Ubercart Alpha 8.  While it may run in
-older versions, I won't promise anything.  Future version of this module WILL
-be backwards compatible with this initial release.
+I've tested it with all versions of Drupal 5.3 and greater, and all versions
+of Ubercart 1.0 Alpha 8 and greater.  While it may run in older versions, I
+won't promise anything.  Future version of this module WILL be backwards
+compatible with this initial release.
 
 
 Before You Begin
@@ -142,8 +154,6 @@ I plan to add package size controls similar to the uc_usps module.
 
 All products are assumed to be in one package.  I'm not sure how best to deal
 with orders that may require multiple packages.
-
-All destinations are hardwired to be residential addresses.
 
 Drop-shipping will be included, but for now everything ships from the store
 address.
