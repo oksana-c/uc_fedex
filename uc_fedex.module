@@ -30,64 +30,86 @@ ini_set("soap.wsdl_cache_enabled", "1");
  * if Drupal intends to cache menu or not - different results may be
  * returned for either case.
  *
- * @param may_cache
- *   TRUE when Drupal is building menus it will cache
- *
  * @return
  *   An array with the menu path, callback, and parameters.
  */
-function uc_fedex_menu($may_cache) {
+function uc_fedex_menu() {
   $items = array();
 
-  if ($may_cache) {
-    $items[] = array(
-      'path'               => 'admin/store/settings/quotes/methods/fedex',
-      'title'              => t('FedEx'),
-      'access'             => user_access('configure quotes'),
-      'callback'           => 'drupal_get_form',
-      'callback arguments' => 'uc_fedex_admin_settings',
-      'type'               => MENU_LOCAL_TASK,
-    );
-  }
-  else {
-    drupal_add_css(drupal_get_path('module', 'uc_fedex') .'/uc_fedex.css');
-  }
+  $items['admin/store/settings/quotes/methods/fedex'] = array(
+    'title'            => 'FedEx',
+    'access arguments' => array('configure quotes'),
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('uc_fedex_admin_settings'),
+    'type'             => MENU_LOCAL_TASK,
+  );
 
   return $items;
 }
 
 
+/**
+ * Implementation of hook_init().
+ *
+ * Used to load module CSS.  This is the wrong place to do it, because
+ * the CSS will be included on every page, not just on the pages where
+ * it is needed.  However, this is currently the Ubercart-recommended
+ * place for adding shipping quotes CSS.
+ */
+function uc_fedex_init() {
+    drupal_add_css(drupal_get_path('module', 'uc_fedex') .'/uc_fedex.css');
+}
+
+
+/**
+ * Implementation of hook_theme() used to declare module theme functions.
+ */
+function uc_fedex_theme() {
+  return array(
+    'uc_fedex_option_label' => array(
+      'file'      => 'uc_fedex.module',
+      'arguments' => array(
+        'product'  => NULL,
+        'packages' => NULL,
+      ),
+    ),
+  );
+}
+
+
 /******************************************************************************
- * Workflow-ng Hooks                                                          *
+ * Conditional Actions Hooks                                                  *
  ******************************************************************************/
 
 
 /**
- * Implementation of hook_configuration().
+ * Implementation of hook_ca_predicate().
  *
- * Connect FedEx quote action and event.
- *
- * @return
- *   Workflow_ng configuration array
+ * Connect the FedEx quote Action and Event.
  */
-function uc_fedex_configuration() {
-  $enabled = variable_get('uc_quote_enabled', array('fedex' => TRUE));
+function uc_fedex_ca_predicate() {
+  $enabled = variable_get('uc_quote_enabled', array());
 
-  $configurations = array(
+  $predicates = array(
     'uc_fedex_get_quote' => array(
-      '#label'  => t('Shipping quote from FedEx'),
-      '#event'  => 'get_quote_from_fedex',
-      '#module' => 'uc_fedex',
-      '#active' => $enabled['fedex'],
+      '#title'   => t('Shipping quote from FedEx'),
+      '#trigger' => 'get_quote_from_fedex',
+      '#class'   => 'uc_fedex',
+      '#status'  => $enabled['fedex'],
+      '#actions' => array(
+        array(
+          '#name'         => 'uc_quote_action_get_quote',
+          '#title'        => t('Fetch a shipping quote'),
+          '#argument_map' => array(
+            'order'  => 'order',
+            'method' => 'method',
+          ),
+        ),
+      ),
     ),
   );
 
-  $action = workflow_ng_use_action('uc_quote_action_get_quote', array(
-    '#label' => t('Fetch a shipping quote'),
-  ));
-  $configurations['uc_fedex_get_quote'] = workflow_ng_configure($configurations['uc_fedex_get_quote'], $action);
-
-  return $configurations;
+  return $predicates;
 }
 
 
@@ -384,17 +406,18 @@ function uc_fedex_admin_settings() {
  * Require password only if it hasn't been set.
  *
  * @param form_id
- *   Form identifier  
+ *   Form identifier
  * @param form_value
  *   Values entered into form
  * @param form
  *   Form itself
  */
-function uc_fedex_admin_settings_validate($form_id, $form_values, $form) {
+function uc_fedex_admin_settings_validate($form, &$form_state) {
+
   $old_password = variable_get('uc_fedex_user_credential_password', '');
-  if (!$form_values['uc_fedex_user_credential_password']) {
+  if (!$form_state['values']['uc_fedex_user_credential_password']) {
     if ($old_password) {
-      form_set_value($form['uc_fedex_user_credential_password'], $old_password);
+      form_set_value($form['uc_fedex_user_credential_password'], $old_password, $form_state);
     }
     else {
       form_set_error('uc_fedex_user_credential_password', t('Password field is required.'));
@@ -599,7 +622,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   //
   // Packaging type - need this to be settable for each package rather
   // than one site-wide setting?
-  // 
+  //
   $request['PackagingType'] = variable_get('uc_fedex_package_type', 'YOUR_PACKAGING');
 
   /* When the package is going to ship */
@@ -909,7 +932,7 @@ function _uc_fedex_package_products($products) {
  * Convenience function to get FedEx codes for their package types.
  *
  * @return
- *   An array of human-friendly names for the different FedEx package types 
+ *   An array of human-friendly names for the different FedEx package types
  */
 function _uc_fedex_package_types() {
   return array(
