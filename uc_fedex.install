@@ -2,16 +2,7 @@
 // $Id$
 
 /**
- * Implementation of hook_install()
- *
- * Creates database tables needed by this module.
- */
-function uc_fedex_install() {
-}
-
-
-/**
- * Implementation of hook_uninstall()
+ * Implementation of hook_uninstall().
  *
  * Removes all tables and variables inserted into the
  * database by this module.
