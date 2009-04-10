@@ -732,10 +732,10 @@ function uc_fedex_tracking_request($tracking_number) {
   /*  Allow tracing so details of request can be retrieved for error logging */
   $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
               .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
-              .'/TrackService_v1.wsdl', array('trace' => 1));
+              .'/TrackService_v3.wsdl', array('trace' => 1));
 
   /* FedEx user key and password filled in by user on admin form */
-  $request['TrackRequest']['WebAuthenticationDetail'] = array(
+  $request['WebAuthenticationDetail'] = array(
     'UserCredential' => array(
       'Key'      => variable_get('uc_fedex_user_credential_key', 0),
       'Password' => variable_get('uc_fedex_user_credential_password', 0),
@@ -743,32 +743,32 @@ function uc_fedex_tracking_request($tracking_number) {
   );
 
   /* FedEx account and meter number filled in by user on admin form */
-  $request['TrackRequest']['ClientDetail'] = array(
+  $request['ClientDetail'] = array(
       'AccountNumber' => variable_get('uc_fedex_account_number', 0),
       'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
   );
 
   /* Optional parameter, contains anything - let admin configure */
-  $request['TrackRequest']['TransactionDetail'] = array(
-    'CustomerTransactionId' => '*** Track Service Request v1 from Ubercart ***'
+  $request['TransactionDetail'] = array(
+    'CustomerTransactionId' => '*** Track Service Request v3 from Ubercart ***'
   );
 
-  /* Track Request v1.1.0 */
-  $request['TrackRequest']['Version'] = array(
+  /* Track Request v3.0.0 */
+  $request['Version'] = array(
     'ServiceId'    => 'trck',   // crs for rate, crss for rate&services
-    'Major'        => '1',
-    'Intermediate' => '1',
+    'Major'        => '3',
+    'Intermediate' => '0',
     'Minor'        => '0',
   );
 
   /* Tracking Numbeer */
-  $request['TrackRequest']['PackageIdentifier'] = array(
+  $request['PackageIdentifier'] = array(
     'Value' => $tracking_number,
     'Type'  => 'TRACKING_NUMBER_OR_DOORTAG',
   );
 
   /* Include Details - 1 is TRUE */
-  $request['TrackRequest']['IncludeDetailedScans'] = 1;
+  $request['IncludeDetailedScans'] = 1;
 
   //
   // Send the SOAP request to the FedEx server
@@ -776,21 +776,14 @@ function uc_fedex_tracking_request($tracking_number) {
   try {
     $response = $client ->__soapCall("track", array('parameters' => $request));
 
-//    $ty = _uc_fedex_services();
-//    foreach ($response->Options as $options) {
-//      drupal_set_message('<pre>' . $ty[$options->ServiceDetail->ServiceType] . ' -- ' . uc_currency_format($options->RatedShipmentDetails[0]->ShipmentRateDetail->TotalNetCharge->Amount) . '</pre>');
-//    }
-//  drupal_set_message('<pre>' . check_plain(var_export($response, TRUE)) . '</pre>');
-
-    if ($response->TrackReply->HighestSeverity != 'FAILURE' &&
-        $response->TrackReply->HighestSeverity != 'ERROR')     {
+    if ($response->HighestSeverity != 'FAILURE' &&
+        $response->HighestSeverity != 'ERROR')     {
       print_request_response($client);
-
 /*
       // Just an Example of how to use this information.
       // You would typically do the following in whatever routine
       // called this function, not here.
-      $reply = $response->TrackReply->TrackDetails;
+      $reply = $response->TrackDetails;
 
       print('Tracking Number = ' . $reply->TrackingNumber . "<br />");
       print('                  ' . $reply->StatusDescription);
@@ -802,14 +795,11 @@ function uc_fedex_tracking_request($tracking_number) {
         print('    Event = ' . $event->EventDescription . " " . $event->Address->City . ", " . $event->Address->StateOrProvinceCode . " on " . $event->Timestamp. "<br />");
       }
 */
-
-
-
     }
     else {
       drupal_set_message('Error in processing FedEx tracking transaction.', 'error');
-      foreach ($response->TrackReply->Notifications as $notification) {
-        if (is_array($response->TrackReply->Notifications)) {
+      foreach ($response->Notifications as $notification) {
+        if (is_array($response->Notifications)) {
           drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
         }
         else {
