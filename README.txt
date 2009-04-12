@@ -4,16 +4,16 @@ This module is an implementation of FedEx shipping quotes for Ubercart.  It
 allows you to quote FedEx shipping costs to your customer during checkout,
 and lets your customer select FedEx services from among the shipping choices.
 
-In the initial release, it gives administrators the ability to specify which
-FedEx services to quote, along with various options regarding packaging and
-pickup/dropoff.  The module will submit, retrieve, and display a quote in
-the checkout page when the user clicks on "Calculate Shipping Rates" or when
-a shipping addreses is entered.
+It gives administrators the ability to specify which FedEx services to quote,
+along with various options regarding packaging and pickup/dropoff.  The module
+will submit, retrieve, and display a quote in the checkout page when the user
+clicks on "Calculate Shipping Rates" or when a shipping addreses is entered.
 
 Also included is a function that lets you track packages and display the
-tracking information - this is not interfaced into the store administration
-menus yet, but it does work if you want to use it to create your own tracking
-page.
+tracking information - this is not interfaced into the store menus, it is
+provided merely for reference.  A completely integrated tracking solution for
+FedEx, UPS, and USPS may be found at http://drupal.org/project/uc_tracking.
+
 
 This module still has limitations and some hardwired values, which I've tried
 to document here and in the code.  
@@ -24,12 +24,12 @@ Quick Start
 Check requirements:  PHP 5 built with --enable-soap, Drupal 5.3, Ubercart
 Alpha 8.
 
-Disable and *uninstall* any previous version of uc_fedex.  Copy this tarball
-into your site/all/modules/ubercart/shipping directory and unzip/untar it.
+Disable any previous version of uc_fedex.  Copy this tarball into your
+sites/all/modules directory and unzip/untar it.
 
 In your web browser, navigate to admin/build/modules and enable the FedEx
 module.  Go to admin/store/settings/quotes/methods/fedex and enter the required
-information.  Finally, enable FedEx quotes admin/store/settings/quotes/methods
+information.  Finally, enable FedEx quotes at admin/store/settings/quotes/methods
 
 If this doesn't work, read the rest of this document (which you really should
 have done first, anyway!).
@@ -40,15 +40,17 @@ Features
 The quote is based on store zip code for the origination address, and customer
 zip code (or country and zone, in the case of non-US customers) for the
 destination address.  THE STORE ADDRESS MUST BE SET!  Check that now, I'll
-wait... Package weight used is the sum of the product weights in the cart.
-All products are assumed to be in one package.  An admin menu option lets you
-chose a "Weight Markup" to be applied to every order - this can adjust the
-package weight based on a percentage, a multiplier, or an addition, and is
-meant to account for the additional weight of your packing materials.  A rate
-markup is also provided, to adjust the shipping rate based on a percentage, a
-multiplier, or an addition. The rate markup is used to compensate for handling
-and other expenses you may incur that you want to lump in with the shipping
-cost.  
+wait... Products are divided into packages in order to keep the total package
+weight below the FedEx weight limit (150lbs).  Quotes returned reflect total
+shipping cost for all the packages in an order.
+
+An admin menu option lets you chose a "Weight Markup" to be applied to every
+order - this can adjust the order total weight based on a percentage, a
+multiplier, or an addition, and is meant to account for the additional weight
+of your packing materials.  A rate markup is also provided, to adjust the
+shipping rate based on a percentage, a multiplier, or an addition. The rate
+markup is used to compensate for handling and other expenses you may incur
+that you want to lump in with the shipping cost.  
 
 The admin has the option of choosing Residential or Commercial quotes.
 Shipping using the FedEx residential service costs a little more.  Shipping
@@ -63,6 +65,9 @@ from your customer for shipping charges.
 
 Tracking information may be obtained using the uc_fedex_tracking_request()
 function.  An example of how to use this function is in the code comments.
+A completely integrated tracking solution for FedEx, UPS, and USPS is
+provided by the uc_tracking module, which may be found at
+http://drupal.org/project/uc_tracking.
 
 
 Requirements
@@ -80,7 +85,7 @@ need to use this module, you'll have to be running PHP 5.
 I've tested it with all versions of Drupal 5.3 and greater, and all versions
 of Ubercart 1.0 Alpha 8 and greater.  While it may run in older versions, I
 won't promise anything.  Future version of this module WILL be backwards
-compatible with this initial release.
+compatible with the initial release.
 
 
 Before You Begin
@@ -122,14 +127,11 @@ when you need them.
 
 Installation
 ============
-Before you use this module, disable the *UNINSTALL* any previous version of
-uc_fedex, then remove that code from your machine!  Although this module name
-is the same as before, the operative portion of this code bears no resemblance
-to the earlier version, and the earlier version will not be supported in any
-way.  In particular there is no migration path for any product-specific data
-you set up in the earlier version. 
+Before you use this module, disable any previous version of uc_fedex,
+then remove that code from your machine.
 
-Copy the tar.gz archive for this module into your site/all/modules/ubercart/shipping directory and unzip/untar it.
+Copy the tar.gz archive for this module into your sites/all/modules directory
+and unzip/untar it.
 
 In your web browser, navigate to admin/build/modules and enable the FedEx
 module.  Go to admin/store/settings/quotes/methods/fedex and enter the required
@@ -152,15 +154,11 @@ dimensional weight.  The quote presented to the customer ignores the
 dimensional weight, and just returns the rate based on your package weight.
 I plan to add package size controls similar to the uc_usps module.
 
-All products are assumed to be in one package.  I'm not sure how best to deal
-with orders that may require multiple packages.
-
 Drop-shipping will be included, but for now everything ships from the store
 address.
 
-This module works for sending packages from US to other countries, but it has
-received only minimal testing.  Quote type MUST be set to ACCOUNT for
-international quotes to work.
+This module works for sending packages from US to other countries. Quote
+type MUST be set to ACCOUNT for international quotes to work.
 
 I still have to decide how to handle the shipping date for the quote - it's
 not as simple as entering the current day because, say, your customer chooses
@@ -175,7 +173,7 @@ Troubleshooting
 Does your site have PHP 5 built with --enable-soap?  Execute <?php phpinfo()
 ?> to see the details of your PHP installation.
 
-You did set your store address at admin/store/settings/store/edit , didn't you?
+You did set your store address at admin/store/settings/store/edit, didn't you?
 
 Check to see that you have entered the correct developer credentials - Test
 credentials for the Test server, Production credentials for the Production
@@ -186,10 +184,6 @@ admin/store/settings/quotes/edit .  This will print debug information on the
 checkout page, including the full request sent to the FedEx server and the
 complete response.  Examine these lines carefully for any hints of what is
 going wrong.
-
-If you're using the devel module with Ubercart alpha 8, turn it off - shipping
-quotes in alpha 8 don't work with devel on.  I'm told this has been fixed in
-bazaar, so it won't be a problem with the next release.
 
 Read the comments in the code - there are some debugging print statements left
 in that can be uncommented if you have problems, and there is a menu option in
