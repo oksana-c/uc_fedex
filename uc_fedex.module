@@ -241,11 +241,6 @@ function uc_fedex_admin_settings() {
     '#required'      => TRUE,
   );
 
-  //
-  // This form will be changed to 'password' field, eventually
-  // But it takes too much trouble to re-enter a long password
-  // every time I change a form option during development and testing.
-  //
   /* Form to set the developer password */
   $form['uc_fedex_credentials']['uc_fedex_user_credential_password'] = array(
     '#type'          => 'textfield',
@@ -407,7 +402,7 @@ function uc_fedex_admin_settings() {
     '#description' => t('Indicate whether each product is quoted as shipping separately or all in one package.'),
   );
 
-  //$form['#validate'][] = 'uc_fedex_admin_settings_validate';
+  $form['#validate'][] = 'uc_fedex_admin_settings_validate';
 
   return system_settings_form($form);
 }
@@ -424,7 +419,7 @@ function uc_fedex_admin_settings_validate($form, &$form_state) {
   $old_password = variable_get('uc_fedex_user_credential_password', '');
   if (!$form_state['values']['uc_fedex_user_credential_password']) {
     if ($old_password) {
-      form_set_value($form['uc_fedex_user_credential_password'], $old_password, $form_state);
+      form_set_value($form['uc_fedex_credentials']['uc_fedex_user_credential_password'], $old_password, $form_state);
     }
     else {
       form_set_error('uc_fedex_user_credential_password', t('Password field is required.'));
