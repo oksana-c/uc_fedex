@@ -407,6 +407,8 @@ function uc_fedex_admin_settings() {
     '#description' => t('Indicate whether each product is quoted as shipping separately or all in one package.'),
   );
 
+  //$form['#validate'][] = 'uc_fedex_admin_settings_validate';
+
   return system_settings_form($form);
 }
 
@@ -416,12 +418,6 @@ function uc_fedex_admin_settings() {
  *
  * Require password only if it hasn't been set.
  *
- * @param form_id
- *   Form identifier
- * @param form_value
- *   Values entered into form
- * @param form
- *   Form itself
  */
 function uc_fedex_admin_settings_validate($form, &$form_state) {
 
@@ -458,9 +454,6 @@ function uc_fedex_admin_settings_validate($form, &$form_state) {
  *   JSON object containing rate, error, and debugging information.
  */
 function uc_fedex_quote($products, $details) {
-
-  // For now, everything is put in one package, so there is
-  // only one element in the $packages array.
 
   /* Assign products to one or more packages for quoting */
   $packages = _uc_fedex_package_products($products);
@@ -501,7 +494,7 @@ function uc_fedex_quote($products, $details) {
   $quotes = array();
   $method = uc_fedex_shipping_method();
 
-  if (!isset($response->Options)) {
+  if (!isset($response->RateReplyDetails)) {
     // Memphis, we have a problem ...
     // Error returned from FedEx server - will print in $message box
     // Don't even try to extract a quote from the response, just return
@@ -510,8 +503,8 @@ function uc_fedex_quote($products, $details) {
   }
 
   /* Test responses to see if we are interested in that service */
-  foreach ($response->Options as $options) {
-    $service = $options->ServiceDetail->ServiceType;
+  foreach ($response->RateReplyDetails as $options) {
+    $service = $options->ServiceType;
 
     if (in_array($service, $fedex_services)) {
       // Check to see if we're quoting ACCOUNT or LIST rates
@@ -646,14 +639,14 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
 
   // Determine weight and length units to send to FedEx
   $weight_units = strtoupper(variable_get('uc_weight_unit', 'LB'));
-  $weight_conversion_factor = 1.0;
+  $weight_conversion_factor = 1;
   if ($weight_units != 'LB' && $weight_units != 'KG') {
     $weight_conversion_factor = uc_weight_conversion($weight_units, 'LB');
     $weight_units = 'LB';
   }
 
   $length_units = strtoupper(variable_get('uc_length_unit', 'IN'));
-  $length_conversion_factor = 1.0;
+  $length_conversion_factor = 1;
   if ($length_units != 'IN' && $length_units != 'CM') {
     $length_conversion_factor = uc_length_conversion($length_units, 'IN');
     $length_units = 'IN';
@@ -683,7 +676,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
       ),
     );
 
-    /* Grab package origin origin - not necessarily the same as shipper */
+    /* Grab package origin - not necessarily the same as shipper */
 //    $request['RequestedShipment']['RequestedPackages']['Origin'] = array(
 //      'Address' => array(
 //        'PostalCode'  => $origin->postal_code,
