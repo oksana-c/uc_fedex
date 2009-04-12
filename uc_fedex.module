@@ -14,6 +14,9 @@
  */
 
 
+/* Maximum shipping weight for FedEx (non-Freight services)
+define('PACKAGE_WEIGHT_LIMIT', 150.0);  // 150lbs
+
 /* Set to 0 to disable caching of SOAP WSDL when developing your WSDL */
 ini_set("soap.wsdl_cache_enabled", "1");
 
