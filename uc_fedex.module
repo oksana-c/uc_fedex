@@ -509,8 +509,14 @@ function uc_fedex_quote($products, $details) {
         $ratedetail = $options->RatedShipmentDetails[1];
       }
       else {  // ACCOUNT rate
-        // ACCOUNT quotes return only ACCOUNT rates
-        $ratedetail = $options->RatedShipmentDetails[0];
+        // ACCOUNT quotes may return either ACCOUNT rates only OR
+        // ACCOUNT rates and LIST rates.  Check.
+        if (is_array($options->RatedShipmentDetails)) {
+          $ratedetail = $options->RatedShipmentDetails[0];
+        }
+        else {
+          $ratedetail = $options->RatedShipmentDetails;
+        }
       }
       // need to handle dimensional rates, other modifiers.
 
