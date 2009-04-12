@@ -729,7 +729,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
 function uc_fedex_tracking_request($tracking_number) {
 
   /* Set up SOAP call. */
-  /*  Allow tracing so details of request can be retrieved for error logging */
+  /* Allow tracing so details of request can be retrieved for error logging */
   $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
               .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
               .'/TrackService_v3.wsdl', array('trace' => 1));
