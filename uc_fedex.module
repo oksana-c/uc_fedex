@@ -655,17 +655,12 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   // Iterate over $packages to account for multi-package shipments
   $sequence = 1;
   foreach ($packages as $package) {
-    $request['RequestedShipment']['RequestedPackages'][] = array(
+    $package_properties = array(
       'SequenceNumber' => $sequence++,
       // Weights must be rounded up to nearest integer value
       'Weight' => array(
         'Value'  => ceil($package->shipweight * $weight_conversion_factor),
         'Units'  => $weight_units,
-      ),
-      // Need to make Insurance optional
-      'InsuredValue' => array(
-        'Amount'   => $package->price,
-        'Currency' => variable_get('uc_currency_code', 'USD'),
       ),
       // Lengths must be rounded up to nearest integer value
       'Dimensions' => array(
@@ -675,6 +670,17 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
         'Units'  => $length_units,
       ),
     );
+
+    // Add Insurance if requested
+    if (variable_get('uc_fedex_insurance', FALSE)) {
+      $package_properties['InsuredValue'] = array(
+        'Amount'   => $package->price,
+        'Currency' => variable_get('uc_currency_code', 'USD'),
+      );
+    }
+
+    // Fill in SOAP request with $package_properties
+    $request['RequestedShipment']['RequestedPackages'][] = $package_properties;
 
     /* Grab package origin - not necessarily the same as shipper */
 //    $request['RequestedShipment']['RequestedPackages']['Origin'] = array(
