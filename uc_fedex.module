@@ -335,6 +335,14 @@ function uc_fedex_admin_settings() {
     ),
   );
 
+  /* Form to add optional Insurance coverage in the amount of the order */
+  $form['uc_fedex_insurance'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Add Insurance to shipping quote'),
+    '#default_value' => variable_get('uc_fedex_insurance', FALSE),
+    '#description'   => t('When enabled, products are insured for their full value.'),
+  );
+
   /* Container for markup forms */
   $form['uc_fedex_markups'] = array(
     '#type'         => 'fieldset',
