@@ -681,7 +681,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     );
 
     /* Grab package origin origin - not necessarily the same as shipper */
-      $request['RequestedShipment']['RequestedPackages']['Origin'] = array(
+//    $request['RequestedShipment']['RequestedPackages']['Origin'] = array(
 //      'Address' => array(
 //        'PostalCode'  => $origin->postal_code,
 //        'CountryCode' => $origin->country_iso_code_2,
