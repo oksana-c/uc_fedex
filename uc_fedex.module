@@ -232,6 +232,14 @@ function uc_fedex_quote($products, $details) {
   /* Assign products to one or more packages for quoting */
   $packages = _uc_fedex_package_products($products);
 
+  if (!count($packages)) {
+    // If _uc_fedex_package_products() returned no packages,
+    // then at least one item must be too heavy to ship via FedEx
+
+    // Skip this shipping method.
+    return array();
+  }
+
   /* Create and fill object with info needed about origin */
   $origin  = variable_get('uc_quote_store_default_address', new stdClass());
   $country = db_query("SELECT * FROM {uc_countries} WHERE country_id = %d", $origin->country);
@@ -780,8 +788,8 @@ function _uc_fedex_package_types() {
  */
 function _uc_fedex_services() {
   return array(
-    'FEDEX_GROUND'                        => t('FedEx Ground -- Commercial Address'),
-    'GROUND_HOME_DELIVERY'                => t('FedEx Ground -- Residence Address'),
+    'FEDEX_GROUND'                        => t('FedEx Ground'),
+    'GROUND_HOME_DELIVERY'                => t('FedEx Home Delivery'),
     'STANDARD_OVERNIGHT'                  => t('FedEx Standard Overnight'),
     'PRIORITY_OVERNIGHT'                  => t('FedEx Priority Overnight'),
     'FIRST_OVERNIGHT'                     => t('FedEx First Overnight'),
