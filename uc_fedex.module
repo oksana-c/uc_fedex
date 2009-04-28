@@ -693,7 +693,15 @@ function _uc_fedex_package_products($products) {
   // package while staying below PACKAGE_WEIGHT_LIMIT.  This number
   // depends on the package weight markup set in the FedEx module
   // administration menu.
-  $products_max_weight = PACKAGE_WEIGHT_LIMIT / uc_fedex_weight_markup(1);
+  $zero_markup = uc_fedex_weight_markup(0);
+  if ($zero_markup == 0) {
+    // Weight markup is a multiplier, because 0 * multiplier = 0
+    $products_max_weight = PACKAGE_WEIGHT_LIMIT / uc_fedex_weight_markup(1);
+  }
+  else {
+    // Weight markup is an additive factor , because 0 + factor = factor != 0
+    $products_max_weight = PACKAGE_WEIGHT_LIMIT - $zero_markup;
+  }
 
 //if (variable_get('uc_fedex_all_in_one', TRUE)) {
 //}
@@ -892,7 +900,7 @@ function theme_uc_fedex_option_label($service, $packages) {
   $output  = '<img class="fedex-logo" src="'. base_path() . drupal_get_path('module', 'uc_fedex') .'/uc_fedex_logo.gif" alt="FedEx Logo" />'
 ;
 
-  // Add FedEx product (service) name, removing the first six characters
+  // Add FedEx service name, removing the first six characters
   // (== 'FedEx ') because these replicate the logo image
   $output .= substr($service, 6);
 
