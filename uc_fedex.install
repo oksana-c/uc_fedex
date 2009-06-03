@@ -1,6 +1,30 @@
 <?php
 // $Id$
 
+
+/**
+ * Implementation of hook_requirements().
+ */
+function uc_fedex_requirements($phase) {
+  $t = get_t();
+
+  // Check that the PHP SOAP extension is loaded
+  $has_soap = extension_loaded('soap');
+
+  $requirements['uc_fedex_soap'] = array(
+    'title' => $t('SOAP'),
+    'value' => $has_soap ? $t('Installed') : $t('Not Installed'),
+  );
+
+  if (!$has_soap) {
+    $requirements['uc_fedex_soap']['severity'] = REQUIREMENT_ERROR;
+    $requirements['uc_fedex_soap']['description'] = $t("The FedEx API requires the PHP <a href='!soap_url'>SOAP</a> library.", array('!soap_url' => 'http://www.php.net/soap'));
+  }
+
+  return $requirements;
+}
+
+
 /**
  * Implementation of hook_uninstall().
  *
