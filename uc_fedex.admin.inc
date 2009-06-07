@@ -21,7 +21,7 @@
  */
 function uc_fedex_admin_settings() {
 
-  /* Container for credentials forms */
+  // Container for credentials forms
   $form['uc_fedex_credentials'] = array(
     '#type'         => 'fieldset',
     '#title'        => t('Credentials'),
@@ -30,7 +30,7 @@ function uc_fedex_admin_settings() {
     '#collapsed'    => FALSE,
   );
 
-  /* Form to set the developer key */
+  // Form to set the developer key
   $form['uc_fedex_credentials']['uc_fedex_user_credential_key'] = array(
     '#type'          => 'textfield',
     '#title'         => t('FedEx Web Services API User Key'),
@@ -38,14 +38,14 @@ function uc_fedex_admin_settings() {
     '#required'      => TRUE,
   );
 
-  /* Form to set the developer password */
+  // Form to set the developer password
   $form['uc_fedex_credentials']['uc_fedex_user_credential_password'] = array(
     '#type'          => 'password',
     '#title'         => t('FedEx Web Services API Password'),
     '#default_value' => variable_get('uc_fedex_user_credential_password', ''),
   );
 
-  /* Form to set user account number */
+  // Form to set user account number
   $form['uc_fedex_credentials']['uc_fedex_account_number'] = array(
     '#type'          => 'textfield',
     '#title'         => t('FedEx Account #'),
@@ -53,7 +53,7 @@ function uc_fedex_admin_settings() {
     '#required'      => TRUE,
   );
 
-  /* Form to set user meter number */
+  // Form to set user meter number
   $form['uc_fedex_credentials']['uc_fedex_meter_number'] = array(
     '#type'          => 'textfield',
     '#title'         => t('FedEx Meter #'),
@@ -61,10 +61,8 @@ function uc_fedex_admin_settings() {
     '#required'      => TRUE,
   );
 
-  /*
-   * Form to set choose between Production and Testing server
-   * ***Defaults to Testing!***
-   */
+  // Form to set choose between Production and Testing server
+  // ***Defaults to Testing!***
   $form['uc_fedex_credentials']['uc_fedex_server_role'] = array(
     '#type'        => 'select',
     '#title'       => t('FedEx Server Role'),
@@ -76,10 +74,8 @@ function uc_fedex_admin_settings() {
     '#default_value' => variable_get('uc_fedex_server_role', 'testing'),
   );
 
-  /*
-   * Form to set choose between LIST quotes and ACCOUNT quotes
-   * ***Defaults to LIST!***
-   */
+  // Form to set choose between LIST quotes and ACCOUNT quotes
+  // ***Defaults to LIST!***
   $form['uc_fedex_quote_type'] = array(
     '#type'        => 'select',
     '#title'       => t('FedEx Quote Type'),
@@ -91,7 +87,7 @@ function uc_fedex_admin_settings() {
     '#default_value' => variable_get('uc_fedex_quote_type', 'list'),
   );
 
-  /* Form to restrict FedEx services available to customer */
+  // Form to restrict FedEx services available to customer
   $form['uc_fedex_services'] = array(
     '#type'          => 'checkboxes',
     '#title'         => t('FedEx Services'),
@@ -100,7 +96,7 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Select the FedEx services customers are allowed to use.'),
   );
 
-  /* Form to set how the package is handed over to FedEx  */
+  // Form to set how the package is handed over to FedEx
   $form['uc_fedex_dropoff_type'] = array(
     '#type'          => 'select',
     '#title'         => t('FedEx Pickup/Dropoff Options'),
@@ -109,7 +105,7 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Pickup/Dropoff options.  It is assumed that all your packages are using the same method.'),
   );
 
-  /* Form to select FedEx packaging to use */
+  // Form to select FedEx packaging to use
   $form['uc_fedex_package_type'] = array(
     '#type'          => 'select',
     '#title'         => t('FedEx Package Type'),
@@ -118,7 +114,7 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Package Type.  It is assumed that all your packages are using the same packaging.'),
   );
 
-  /* Form to select Residential/Commercial destination address */
+  // Form to select Residential/Commercial destination address
   $form['uc_fedex_residential_quotes'] = array(
     '#type'          => 'radios',
     '#title'         => t('Quote rates assuming destination is a'),
@@ -129,7 +125,7 @@ function uc_fedex_admin_settings() {
     ),
   );
 
-  /* Form to add optional Insurance coverage in the amount of the order */
+  // Form to add optional Insurance coverage in the amount of the order
   $form['uc_fedex_insurance'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Add Insurance to shipping quote'),
@@ -137,7 +133,7 @@ function uc_fedex_admin_settings() {
     '#description'   => t('When enabled, products are insured for their full value.'),
   );
 
-  /* Container for markup forms */
+  // Container for markup forms
   $form['uc_fedex_markups'] = array(
     '#type'         => 'fieldset',
     '#title'        => t('Markups'),
@@ -146,7 +142,7 @@ function uc_fedex_admin_settings() {
     '#collapsed'    => FALSE,
   );
 
-  /* Form to select type of rate markup */
+  // Form to select type of rate markup
   $form['uc_fedex_markups']['uc_fedex_rate_markup_type'] = array(
     '#type'          => 'select',
     '#title'         => t('Rate Markup Type'),
@@ -158,7 +154,7 @@ function uc_fedex_admin_settings() {
     ),
   );
 
-  /* Form to select type of rate amount */
+  // Form to select type of rate amount
   $form['uc_fedex_markups']['uc_fedex_rate_markup'] = array(
     '#type'          => 'textfield',
     '#title'         => t('FedEx Shipping Rate Markup'),
@@ -166,7 +162,7 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Markup FedEx shipping rate quote by dollar amount, percentage, or multiplier.'),
   );
 
-  /* Form to select type of weight markup */
+  // Form to select type of weight markup
   $form['uc_fedex_markups']['uc_fedex_weight_markup_type'] = array(
     '#type'          => 'select',
     '#title'         => t('Weight Markup Type'),
@@ -178,7 +174,7 @@ function uc_fedex_admin_settings() {
     ),
   );
 
-  /* Form to select type of weight markup amount */
+  // Form to select type of weight markup amount
   $form['uc_fedex_markups']['uc_fedex_weight_markup'] = array(
     '#type'          => 'textfield',
     '#title'         => t('FedEx Shipping Weight Markup'),
@@ -186,7 +182,7 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Markup FedEx shipping weight before quote by weight amount, percentage, or multiplier.'),
   );
 
-  /* Form to select packaging type */
+  // Form to select packaging type
   $form['uc_fedex_all_in_one'] = array(
     '#type'          => 'radios',
     '#title'         => t('Number of Packages'),
@@ -198,6 +194,7 @@ function uc_fedex_admin_settings() {
     '#description' => t('Indicate whether each product is quoted as shipping separately or all in one package.'),
   );
 
+  // Register validation handler
   $form['#validate'][] = 'uc_fedex_admin_settings_validate';
 
   return system_settings_form($form);

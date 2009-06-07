@@ -33,7 +33,7 @@ function uc_fedex_requirements($phase) {
  */
 function uc_fedex_uninstall() {
 
-  /* Remove all module variables from the database */
+  // Remove all module variables from the database
   variable_del('uc_fedex_user_credential_key');
   variable_del('uc_fedex_user_credential_password');
   variable_del('uc_fedex_account_number');
