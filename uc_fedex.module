@@ -625,19 +625,19 @@ function uc_fedex_tracking_request($tracking_number) {
  *   Shipping rate after markup
  */
 function uc_fedex_rate_markup($rate) {
-  $markup = variable_get('uc_fedex_rate_markup', '0');
+  $markup = trim(variable_get('uc_fedex_rate_markup', '0'));
   $type   = variable_get('uc_fedex_rate_markup_type', 'percentage');
 
-  if (is_numeric(trim($markup))) {
+  if (is_numeric($markup)) {
     switch ($type) {
       case 'percentage':
-        return $rate + $rate * floatval(trim($markup)) / 100;
+        return $rate + $rate * floatval($markup) / 100;
 
       case 'multiplier':
-        return $rate * floatval(trim($markup));
+        return $rate * floatval($markup);
 
       case 'currency':
-        return $rate + floatval(trim($markup));
+        return $rate + floatval($markup);
     }
   }
   else {
@@ -656,19 +656,19 @@ function uc_fedex_rate_markup($rate) {
  *   Shipping weight after markup
  */
 function uc_fedex_weight_markup($weight) {
-  $markup = variable_get('uc_fedex_weight_markup', '0');
+  $markup = trim(variable_get('uc_fedex_weight_markup', '0'));
   $type   = variable_get('uc_fedex_weight_markup_type', 'percentage');
 
-  if (is_numeric(trim($markup))) {
+  if (is_numeric($markup)) {
     switch ($type) {
       case 'percentage':
-        return $weight + $weight * floatval(trim($markup)) / 100;
+        return $weight + $weight * floatval($markup) / 100;
 
       case 'multiplier':
-        return $weight * floatval(trim($markup));
+        return $weight * floatval($markup);
 
       case 'mass':
-        return $weight + floatval(trim($markup));
+        return $weight + floatval($markup);
     }
   }
   else {
