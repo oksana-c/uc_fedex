@@ -146,13 +146,16 @@ Limitations
 The package size is hardwired to 1"x1"x1" - this is the size FedEx uses
 on their own web page to deliver a "quick quote".  A more detailed quote
 requires actual package dimensions.  FedEx defines the "dimensional weight"
-of a package as length x width x height in inches, divided by 194 (for
-shipments within US - for international shipments divide by 186).  For this
-hardwired box size, that comes out to a "dimensional weight" of less than
+(in pounds) of a package as length x width x height in inches, divided by 194
+for shipments within US (for international shipments divide by 166).  For
+this hardwired box size, that comes out to a "dimensional weight" of less than
 1 ounce.  FedEx will charge based on the greater of the actual weight and the
 dimensional weight.  The quote presented to the customer ignores the
 dimensional weight, and just returns the rate based on your package weight.
-I plan to add package size controls similar to the uc_usps module.
+For large but light objects, where the dimensional weight should be used
+instead, you'll have to enter the product weight a bit higher than actual -
+i.e. you'll have to enter the dimensional weight on the product page rather
+than the actual weight in order to receive accurate quotes.
 
 Drop-shipping will be included, but for now everything ships from the store
 address.

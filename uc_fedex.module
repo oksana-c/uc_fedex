@@ -352,7 +352,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   // Allow tracing so details of request can be retrieved for error logging
   $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
               .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
-              .'/RateService_v6.wsdl', array('trace' => 1));
+              .'/RateService_v7.wsdl', array('trace' => 1));
 
   // FedEx user key and password filled in by user on admin form
   $request['WebAuthenticationDetail'] = array(
@@ -370,13 +370,13 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
 
   // Optional parameter, contains anything - let admin configure
   $request['TransactionDetail'] = array(
-    'CustomerTransactionId' => '*** Rate/Available Services Request v6 from Ubercart ***'
+    'CustomerTransactionId' => '*** Rate/Available Services Request v7 from Ubercart ***'
   );
 
-  // Rate Services Availability Request v6.0.0
+  // Rate Services Availability Request v7.0.0
   $request['Version'] = array(
     'ServiceId'    => 'crs',
-    'Major'        => '6',
+    'Major'        => '7',
     'Intermediate' => '0',
     'Minor'        => '0',
   );
@@ -420,10 +420,11 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   // Packaging type - need this to be settable for each package rather
   // than one site-wide setting?
   //
-  //$request['ReqeustedShipment']['PackagingType'] = variable_get('uc_fedex_package_type', 'YOUR_PACKAGING');
+  //$request['RequestedShipment']['PackagingType'] = variable_get('uc_fedex_package_type', 'YOUR_PACKAGING');
 
-  $request['RequestedShipment']['PackageCount'] = count($packages);
-  $request['RequestedShipment']['RequestedPackages'] = array();
+  $request['RequestedShipment']['PackageDetail'] = 'INDIVIDUAL_PACKAGES';
+  $request['RequestedShipment']['PackageCount']  = count($packages);
+  $request['RequestedShipment']['RequestedPackageLineItems'] = array();
 
   // Determine weight and length units to send to FedEx
   $weight_units = strtoupper(variable_get('uc_weight_unit', 'LB'));
@@ -468,10 +469,10 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     }
 
     // Fill in SOAP request with $package_properties
-    $request['RequestedShipment']['RequestedPackages'][] = $package_properties;
+    $request['RequestedShipment']['RequestedPackageLineItems'][] = $package_properties;
 
     // Grab package origin - not necessarily the same as shipper
-//    $request['RequestedShipment']['RequestedPackages']['Origin'] = array(
+//    $request['RequestedShipment']['RequestedPackageLineItems']['Origin'] = array(
 //      'Address' => array(
 //        'PostalCode'  => $origin->postal_code,
 //        'CountryCode' => $origin->country_iso_code_2,
