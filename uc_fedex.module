@@ -14,10 +14,10 @@
  */
 
 
-/* Maximum shipping weight for FedEx (non-Freight services) */
+// Maximum shipping weight for FedEx (non-Freight services)
 define('PACKAGE_WEIGHT_LIMIT', 150.0);  // 150lbs
 
-/* Set to 0 to disable caching of SOAP WSDL when developing your WSDL */
+// Set to 0 to disable caching of SOAP WSDL when developing your WSDL
 ini_set("soap.wsdl_cache_enabled", "1");
 
 
@@ -229,7 +229,7 @@ function uc_fedex_store_status() {
  */
 function uc_fedex_quote($products, $details) {
 
-  /* Assign products to one or more packages for quoting */
+  // Assign products to one or more packages for quoting
   $packages = _uc_fedex_package_products($products);
 
   if (!count($packages)) {
@@ -240,13 +240,13 @@ function uc_fedex_quote($products, $details) {
     return array();
   }
 
-  /* Create and fill object with info needed about origin */
+  // Create and fill object with info needed about origin
   $origin  = variable_get('uc_quote_store_default_address', new stdClass());
   $country = db_query("SELECT * FROM {uc_countries} WHERE country_id = %d", $origin->country);
   $country_data = db_fetch_object($country);
   $origin->country_iso_code_2 = $country_data->country_iso_code_2;
 
-  /* Create and fill object with info needed about destination */
+  // Create and fill object with info needed about destination
   $destination = (object) $details;
   if ($origin->country == $destination->country) {  // Try to save a DB query
     $destination->country_iso_code_2 = $origin->country_iso_code_2;
@@ -257,7 +257,7 @@ function uc_fedex_quote($products, $details) {
     $destination->country_iso_code_2 = $country_data->country_iso_code_2;
   }
 
-  /* Load preference for Residence/Commercial destination address */
+  // Load preference for Residence/Commercial destination address
   if (variable_get('uc_fedex_residential_quotes', 1)) {
     $destination->residence = TRUE;
   }
@@ -265,12 +265,12 @@ function uc_fedex_quote($products, $details) {
     $destination->residence = FALSE;
   }
 
-  /* Call the method that does the actual SOAP request to the FedEx Server */
-  /* Response contains all available services and rates                    */
+  // Call the method that does the actual SOAP request to the FedEx Server
+  // Response contains all available services and rates
   $response = uc_fedex_rate_request($packages, $origin, $destination);
 
-  /* Construct an array containing only those services that the   */
-  /* store admin has allowed in admin/store/settings/quotes/edit  */
+  // Construct an array containing only those services that the
+  // store admin has allowed in admin/store/settings/quotes/edit
   $fedex_services = array_filter(variable_get('uc_fedex_services', _uc_fedex_services()));
 
   $quotes = array();
@@ -284,7 +284,7 @@ function uc_fedex_quote($products, $details) {
     return array();
   }
 
-  /* Test responses to see if we are interested in that service */
+  // Test responses to see if we are interested in that service
   foreach ($response->RateReplyDetails as $options) {
     $service = $options->ServiceType;
 
@@ -348,13 +348,13 @@ function uc_fedex_quote($products, $details) {
  */
 function uc_fedex_rate_request($packages, $origin, $destination) {
 
-  /* Set up SOAP call. */
-  /* Allow tracing so details of request can be retrieved for error logging */
+  // Set up SOAP call.
+  // Allow tracing so details of request can be retrieved for error logging
   $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
               .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
               .'/RateService_v6.wsdl', array('trace' => 1));
 
-  /* FedEx user key and password filled in by user on admin form */
+  // FedEx user key and password filled in by user on admin form
   $request['WebAuthenticationDetail'] = array(
     'UserCredential' => array(
       'Key'      => variable_get('uc_fedex_user_credential_key', 0),
@@ -362,18 +362,18 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     )
   );
 
-  /* FedEx account and meter number filled in by user on admin form */
+  // FedEx account and meter number filled in by user on admin form
   $request['ClientDetail'] = array(
       'AccountNumber' => variable_get('uc_fedex_account_number', 0),
       'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
   );
 
-  /* Optional parameter, contains anything - let admin configure */
+  // Optional parameter, contains anything - let admin configure
   $request['TransactionDetail'] = array(
     'CustomerTransactionId' => '*** Rate/Available Services Request v6 from Ubercart ***'
   );
 
-  /* Rate Services Availability Request v6.0.0 */
+  // Rate Services Availability Request v6.0.0
   $request['Version'] = array(
     'ServiceId'    => 'crs',
     'Major'        => '6',
@@ -381,7 +381,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     'Minor'        => '0',
   );
 
-  /* Grab details of sender origin - not necessarily package origin */
+  // Grab details of sender origin - not necessarily package origin
   $request['RequestedShipment']['Shipper'] = array(
     'Address' => array(
       'PostalCode'  => $origin->postal_code,
@@ -389,7 +389,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     )
   );
 
-  /* Grab details of package destination */
+  // Grab details of package destination
   $request['RequestedShipment']['Recipient'] = array(
     'Address' => array(
       'PostalCode'  => $destination->postal_code,
@@ -398,17 +398,17 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     )
   );
 
-  /* Currency for quote */
+  // Currency for quote
   $request['RequestedShipment']['CurrencyType'] = variable_get('uc_currency_code', 'USD');
 
-  /* Set Pickup/Dropoff type */
+  // Set Pickup/Dropoff type
   $request['RequestedShipment']['DropoffType'] = variable_get('uc_fedex_dropoff_type', 'REGULAR_PICKUP');
 
   // Note that ACCOUNT rates *require* a valid account number
   // and return accurate answers on the production server
   $request['RequestedShipment']['RateRequestTypes'] = strtoupper(variable_get('uc_fedex_quote_type', 'list'));
 
-  /* When the package is going to ship */
+  // When the package is going to ship
 // have to think about this -
 // cutoff times, commits store owner to exact ship date, etc.
 // Probably have to make an admin menu option with cutoff time, after
@@ -470,7 +470,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     // Fill in SOAP request with $package_properties
     $request['RequestedShipment']['RequestedPackages'][] = $package_properties;
 
-    /* Grab package origin - not necessarily the same as shipper */
+    // Grab package origin - not necessarily the same as shipper
 //    $request['RequestedShipment']['RequestedPackages']['Origin'] = array(
 //      'Address' => array(
 //        'PostalCode'  => $origin->postal_code,
@@ -525,13 +525,13 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
  */
 function uc_fedex_tracking_request($tracking_number) {
 
-  /* Set up SOAP call. */
-  /* Allow tracing so details of request can be retrieved for error logging */
+  // Set up SOAP call.
+  // Allow tracing so details of request can be retrieved for error logging
   $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
               .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
               .'/TrackService_v3.wsdl', array('trace' => 1));
 
-  /* FedEx user key and password filled in by user on admin form */
+  // FedEx user key and password filled in by user on admin form
   $request['WebAuthenticationDetail'] = array(
     'UserCredential' => array(
       'Key'      => variable_get('uc_fedex_user_credential_key', 0),
@@ -539,18 +539,18 @@ function uc_fedex_tracking_request($tracking_number) {
     )
   );
 
-  /* FedEx account and meter number filled in by user on admin form */
+  // FedEx account and meter number filled in by user on admin form
   $request['ClientDetail'] = array(
       'AccountNumber' => variable_get('uc_fedex_account_number', 0),
       'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
   );
 
-  /* Optional parameter, contains anything - let admin configure */
+  // Optional parameter, contains anything - let admin configure
   $request['TransactionDetail'] = array(
     'CustomerTransactionId' => '*** Track Service Request v3 from Ubercart ***'
   );
 
-  /* Track Request v3.0.0 */
+  // Track Request v3.0.0
   $request['Version'] = array(
     'ServiceId'    => 'trck',   // crs for rate, crss for rate&services
     'Major'        => '3',
@@ -558,13 +558,13 @@ function uc_fedex_tracking_request($tracking_number) {
     'Minor'        => '0',
   );
 
-  /* Tracking Numbeer */
+  // Tracking Number
   $request['PackageIdentifier'] = array(
     'Value' => $tracking_number,
     'Type'  => 'TRACKING_NUMBER_OR_DOORTAG',
   );
 
-  /* Include Details - 1 is TRUE */
+  // Include Details - 1 is TRUE
   $request['IncludeDetailedScans'] = 1;
 
   //
