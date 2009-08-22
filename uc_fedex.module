@@ -910,3 +910,109 @@ function theme_uc_fedex_option_label($service, $packages) {
 
   return $output;
 }
+
+
+/**
+ * Constructs and executes a SOAP AddressValidationService request.
+ */
+function uc_fedex_address_request($address) {
+
+drupal_set_message('<pre>'. var_export($address, TRUE) .'</pre>');
+
+  // Set up SOAP call.
+  // Allow tracing so details of request can be retrieved for error logging
+  $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
+              .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
+              .'/AddressValidationService_v2.wsdl', array('trace' => 1));
+
+  // FedEx user key and password filled in by user on admin form
+  $request['WebAuthenticationDetail'] = array(
+    'UserCredential' => array(
+      'Key'      => variable_get('uc_fedex_user_credential_key', 0),
+      'Password' => variable_get('uc_fedex_user_credential_password', 0),
+    )
+  );
+
+  // FedEx account and meter number filled in by user on admin form
+  $request['ClientDetail'] = array(
+      'AccountNumber' => variable_get('uc_fedex_account_number', 0),
+      'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
+  );
+
+  // Optional parameter, contains anything - let admin configure
+  $request['TransactionDetail'] = array(
+    'CustomerTransactionId' => ' *** Address Validation Request v2 from Ubercart ***'
+  );
+
+  // Address Validation Request v2.0.0
+  $request['Version'] = array(
+    'ServiceId'    => 'aval',
+    'Major'        => '2',
+    'Intermediate' => '0',
+    'Minor'        => '0',
+  );
+
+  // Timestamp
+  $request['RequestTimestamp'] = date('c');
+
+  // Check address accuracy settings
+  $request['Options'] = array(
+    'VerifyAddresses'             => 1,
+    'CheckResidentialStatus'      => 1,
+    'MaximumNumberOfMatches'      => 5,
+    'StreetAccuracy'              => 'LOOSE',
+    'DirectionalAccuracy'         => 'LOOSE',
+    'CompanyNameAccuracy'         => 'LOOSE',
+    'ConvertToUpperCase'          => 0,
+    'RecognizeAlternateCityNames' => 1,
+    'ReturnParsedElements'        => 1
+  );
+
+//$address->country_iso_code_2 = uc_get_country_code($address->country);
+
+  $street_lines   = array();
+  $street_lines[] = $address->street1;
+  if (!empty($address->street2)) $street_lines[] = $address->street2;
+
+  // Get address
+// CountryCode needs to be set properly
+// CompanyName needs to be unset if empty
+  $request['AddressesToValidate'][] = array(
+    'AddressId'   => $address->last_name .', '. $address->last_name,
+//  'CompanyName' => $address->company,
+    'Address'     => array(
+      'StreetLines'         => $street_lines,
+      'City'                => $address->city,
+      'StateOrProvinceCode' => uc_get_zone_code($address->zone),
+      'PostalCode'          => $address->postal_code,
+//    'CountryCode'         => $address->country_iso_code_2,
+    ),
+  );
+
+  //
+  // Send the SOAP request to the FedEx server
+  //
+  try {
+    $response = $client ->__soapCall("addressValidation", array('parameters' => $request));
+
+    if ($response->HighestSeverity != 'FAILURE' &&
+        $response->HighestSeverity != 'ERROR')     {
+        print_request_response($client);
+    }
+    else {
+      drupal_set_message('Error with validating your address.', 'error');
+      foreach ($response->Notifications as $notification) {
+        if (is_array($response->Notifications)) {
+          drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
+        }
+        else {
+          drupal_set_message($notification, 'error');
+        }
+      }
+    }
+    return $response;
+  }
+  catch (SoapFault $exception) {
+    drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>'. $exception->faultcode .'<br /><b>String:</b>'. $exception->faultstring .'<br />', 'error');
+  }
+}
