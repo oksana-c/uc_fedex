@@ -968,14 +968,14 @@ drupal_set_message('<pre>'. var_export($address, TRUE) .'</pre>');
     'ReturnParsedElements'        => 1
   );
 
-//$address->country_iso_code_2 = uc_get_country_code($address->country);
+  $country = uc_get_country_data(array('country_id' => $address->country));
+  $address->country_iso_code_2 = $country[0]['country_iso_code_2'];
 
   $street_lines   = array();
   $street_lines[] = $address->street1;
   if (!empty($address->street2)) $street_lines[] = $address->street2;
 
   // Get address
-// CountryCode needs to be set properly
 // CompanyName needs to be unset if empty
   $request['AddressesToValidate'][] = array(
     'AddressId'   => $address->last_name .', '. $address->last_name,
@@ -985,7 +985,7 @@ drupal_set_message('<pre>'. var_export($address, TRUE) .'</pre>');
       'City'                => $address->city,
       'StateOrProvinceCode' => uc_get_zone_code($address->zone),
       'PostalCode'          => $address->postal_code,
-//    'CountryCode'         => $address->country_iso_code_2,
+      'CountryCode'         => $address->country_iso_code_2,
     ),
   );
 
@@ -1000,7 +1000,7 @@ drupal_set_message('<pre>'. var_export($address, TRUE) .'</pre>');
         print_request_response($client);
     }
     else {
-      drupal_set_message('Error with validating your address.', 'error');
+      drupal_set_message('Error in processing FedEx Address Validation.', 'error');
       foreach ($response->Notifications as $notification) {
         if (is_array($response->Notifications)) {
           drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
