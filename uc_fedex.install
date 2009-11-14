@@ -26,12 +26,56 @@ function uc_fedex_requirements($phase) {
 
 
 /**
+ * Implementation of hook_schema().
+ */
+function uc_fedex_schema() {
+  $schema = array();
+
+  $schema['uc_fedex_products'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type'     => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default'  => 0,
+      ),
+      'nid' => array(
+        'type'     => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default'  => 0,
+      ),
+      'pkg_type' => array(
+        'type'     => 'varchar',
+        'length'   => 2,
+        'not null' => TRUE,
+        'default'  => '',
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  return $schema;
+}
+
+
+/**
+ * Implementation of hook_install().
+ */
+function uc_fedex_install() {
+  drupal_install_schema('uc_fedex');
+}
+
+
+/**
  * Implementation of hook_uninstall().
  *
  * Removes all tables and variables inserted into the
  * database by this module.
  */
 function uc_fedex_uninstall() {
+
+  drupal_uninstall_schema('uc_fedex');
 
   // Remove all module variables from the database
   variable_del('uc_fedex_user_credential_key');
@@ -52,4 +96,45 @@ function uc_fedex_uninstall() {
   variable_del('uc_fedex_rate_markup_type');
   variable_del('uc_fedex_weight_markup');
   variable_del('uc_fedex_weight_markup_type');
+
+  variable_del('uc_fedex_label_image_format');
+  variable_del('uc_fedex_label_stock');
+  variable_del('uc_fedex_label_orientation');
+}
+
+
+/**
+ * Implementation of hook_update().
+ */
+function uc_fedex_update_6200() {
+  $schema = array();
+
+  $schema['uc_fedex_products'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type'     => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default'  => 0,
+      ),
+      'nid' => array(
+        'type'     => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default'  => 0,
+      ),
+      'pkg_type' => array(
+        'type'     => 'varchar',
+        'length'   => 2,
+        'not null' => TRUE,
+        'default'  => '',
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  $ret = array();
+  db_create_table($ret, 'uc_fedex_products', $schema['uc_fedex_products']);
+
+  return $ret;
 }
