@@ -491,7 +491,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
       print_request_response($client);
     }
     else {
-      drupal_set_message('Error in processing FedEx Shipping Quote transaction.', 'error');
+      drupal_set_message(t('Error in processing FedEx Shipping Quote transaction.'), 'error');
       foreach ($response->Notifications as $notification) {
         if (is_array($response->Notifications)) {
           drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
@@ -595,7 +595,7 @@ function uc_fedex_tracking_request($tracking_number) {
 */
     }
     else {
-      drupal_set_message('Error in processing FedEx tracking transaction.', 'error');
+      drupal_set_message(t('Error in processing FedEx tracking transaction.'), 'error');
       foreach ($response->Notifications as $notification) {
         if (is_array($response->Notifications)) {
           drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
@@ -1070,7 +1070,7 @@ drupal_set_message('<pre>'. var_export($address, TRUE) .'</pre>');
       print_request_response($client);
     }
     else {
-      drupal_set_message('Error in processing FedEx Address Validation.', 'error');
+      drupal_set_message(t('Error in processing FedEx Address Validation.'), 'error');
       foreach ($response->Notifications as $notification) {
         if (is_array($response->Notifications)) {
           drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
