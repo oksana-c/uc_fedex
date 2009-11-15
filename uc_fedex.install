@@ -85,17 +85,20 @@ function uc_fedex_uninstall() {
   variable_del('uc_fedex_server_role');
 
   variable_del('uc_fedex_services');
-  variable_del('uc_fedex_all_in_one');
   variable_del('uc_fedex_quote_type');
   variable_del('uc_fedex_dropoff_type');
   variable_del('uc_fedex_package_type');
-  variable_del('uc_fedex_residential_quotes');
+  variable_del('uc_fedex_all_in_one');
   variable_del('uc_fedex_insurance');
 
   variable_del('uc_fedex_rate_markup');
   variable_del('uc_fedex_rate_markup_type');
   variable_del('uc_fedex_weight_markup');
   variable_del('uc_fedex_weight_markup_type');
+
+  variable_del('uc_fedex_address_validation');
+  variable_del('uc_fedex_residential_quotes');
+  variable_del('uc_fedex_checkout_validation');
 
   variable_del('uc_fedex_label_image_format');
   variable_del('uc_fedex_label_stock');
