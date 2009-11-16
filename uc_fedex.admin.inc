@@ -234,7 +234,7 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_validation']['uc_fedex_checkout_validation'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Enable checkout address validation'),
-    '#default_value' => variable_get('uc_fedex_address_validation', FALSE),
+    '#default_value' => variable_get('uc_fedex_checkout_validation', FALSE),
     '#description'   => t('When enabled, JavaScript will be used to validate the shipping address entered by the customer on the checkout page.  Errors will be flagged immediately, before the order is submitted.'),
     '#disabled'      => TRUE,
   );
