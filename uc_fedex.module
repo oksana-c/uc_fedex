@@ -429,7 +429,8 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   // Determine weight and length units to send to FedEx
 
   // FedEx supports only LB and KG; if store units are set to
-  // something else then convert to LB
+  // something else then determine conversion factor to apply
+  // to package weights
   $weight_units = strtoupper(variable_get('uc_weight_unit', 'LB'));
   $weight_conversion_factor = 1;
   if ($weight_units != 'LB' && $weight_units != 'KG') {
@@ -437,8 +438,9 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     $weight_units = 'LB';
   }
 
-  // FedEx supports only IN and CM, if store units are set to
-  // something else then convert to IN
+  // FedEx supports only IN and CM; if store units are set to
+  // something else then determine conversion factor to apply
+  // to package lengths
   $length_units = strtoupper(variable_get('uc_length_unit', 'IN'));
   $length_conversion_factor = 1;
   if ($length_units != 'IN' && $length_units != 'CM') {
