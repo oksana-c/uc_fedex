@@ -3,13 +3,13 @@
 
 /**
  * @file
- * FedEx Web Services Rate / Availabile Services Quote
+ * FedEx Web Services Rate / Available Services Quote
  *
  * Shipping quote module that interfaces with the FedEx Web Services API
  * to get rates for small package shipments.  Implements a SOAP Web Service
  * client.
  *
- * @author Tim Rohaly.
+ * @author Tim Rohaly.    <http://drupal.org/user/202830>
  * @version $Id$
  */
 
@@ -259,10 +259,10 @@ function uc_fedex_quote($products, $details) {
 
   // Load preference for Residence/Commercial destination address
   if (variable_get('uc_fedex_residential_quotes', 1)) {
-    $destination->residence = TRUE;
+    $destination->residential = TRUE;
   }
   else {
-    $destination->residence = FALSE;
+    $destination->residential = FALSE;
   }
 
   // Call the method that does the actual SOAP request to the FedEx Server
@@ -394,7 +394,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     'Address' => array(
       'PostalCode'  => $destination->postal_code,
       'CountryCode' => $destination->country_iso_code_2,
-      'Residential' => $destination->residence,
+      'Residential' => $destination->residential,
     )
   );
 
@@ -427,6 +427,9 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   $request['RequestedShipment']['RequestedPackageLineItems'] = array();
 
   // Determine weight and length units to send to FedEx
+
+  // FedEx supports only LB and KG; if store units are set to
+  // something else then convert to LB
   $weight_units = strtoupper(variable_get('uc_weight_unit', 'LB'));
   $weight_conversion_factor = 1;
   if ($weight_units != 'LB' && $weight_units != 'KG') {
@@ -434,6 +437,8 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     $weight_units = 'LB';
   }
 
+  // FedEx supports only IN and CM, if store units are set to
+  // something else then convert to IN
   $length_units = strtoupper(variable_get('uc_length_unit', 'IN'));
   $length_conversion_factor = 1;
   if ($length_units != 'IN' && $length_units != 'CM') {
@@ -680,8 +685,21 @@ function uc_fedex_weight_markup($weight) {
 
 
 /**
- * Packages products into boxes subject to the FedEx weight limit
+ * Packages products into boxes subject to the FedEx weight limit,
  * corrected for any weight markup imposed by the administrator.
+ *
+ * $package object returned from this routine contains the following members:
+ *   ->quantity     Number of items in package
+ *   ->price        Value (sales price, in store currency) of items in package
+ *   ->weight       Actual weight (LB) of items in package
+ *   ->weight_units Set to store default, taken from uc_weight_unit variable
+ *   ->shipweight   Computed weight of package, including markup
+ *
+ * Store weight units are used internally for compution of package weights.
+ * Each product may have its own weight units; these are converted to store
+ * units and the package shipweight is returned in terms of the store weight
+ * units. The store weight units are saved in the $package object for
+ * completeness.
  *
  * @param products
  *   An array of nodes of type product
@@ -699,12 +717,18 @@ function _uc_fedex_package_products($products) {
   $zero_markup = uc_fedex_weight_markup(0);
   if ($zero_markup == 0) {
     // Weight markup is a multiplier, because 0 * multiplier = 0
+    // This handles percentage markup too
     $products_max_weight = PACKAGE_WEIGHT_LIMIT / uc_fedex_weight_markup(1);
   }
   else {
     // Weight markup is an additive factor , because 0 + factor = factor != 0
     $products_max_weight = PACKAGE_WEIGHT_LIMIT - $zero_markup;
   }
+
+  // Convert $products_max_weight (which is defined in LB units) into store
+  // default weight units so we can perform all calculations and return all
+  // results in store default weight units
+  $products_max_weight = $products_max_weight * uc_weight_conversion('LB', variable_get('uc_weight_unit', 'LB'));
 
 //if (variable_get('uc_fedex_all_in_one', TRUE)) {
 //}
@@ -713,14 +737,17 @@ function _uc_fedex_package_products($products) {
 
   // Create first package
   $package = new stdClass();
-  $package->quantity = 0;
-  $package->price    = 0.0;
-  $package->weight   = 0.0;
+  $package->quantity     = 0;
+  $package->price        = 0.0;
+  $package->weight       = 0.0;
+  $package->weight_units = variable_get('uc_weight_unit', 'LB');
 
   // Loop over products
   foreach ($products as $product) {
-    // Get item weight
-    $item_weight = $product->weight * uc_weight_conversion($product->weight_units, 'lb');
+    // Get item weight. Weight units are set on a per-product basis, so
+    // we convert as necessary in order to perform all calculations in the
+    // store weight units.
+    $item_weight = $product->weight * uc_weight_conversion($product->weight_units, variable_get('uc_weight_unit', 'LB'));
 
     if ($item_weight >= $products_max_weight) {
       // This product is too heavy to ship via FexEx Ground or FedEx Express -
@@ -742,28 +769,29 @@ function _uc_fedex_package_products($products) {
         // If weight >= maximum allowed weight, save current package to
         // array and start a new package:
 
-        // First markup weight on a per-package basis
+        // First, markup weight of current package
         $package->shipweight = uc_fedex_weight_markup($package->weight);
 
-        // Save current package to array
+        // Second, save current package to array
         $packages[] = $package;
 
         // Finally, start a new package
         $package = new stdClass();
-        $package->quantity = 1;
-        $package->price    = $product->price;
-        $package->weight   = $item_weight;
+        $package->quantity     = 1;
+        $package->price        = $product->price;
+        $package->weight       = $item_weight;
+        $package->weight_units = variable_get('uc_weight_unit', 'LB');
       }
     }
   }
 
-  // No more products left to package.
+  // No more products left to package
   // Take care of the partially-filled package we were working on
 
-  // Markup weight on a per-package basis
+  // First, markup weight of partially-filled package
   $package->shipweight = uc_fedex_weight_markup($package->weight);
 
-  // Save the partially-filled package to the array then exit
+  // Second, save the partially-filled package to the array and exit
   $packages[] = $package;
 
   return $packages;
