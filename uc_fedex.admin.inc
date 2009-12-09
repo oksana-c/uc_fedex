@@ -5,7 +5,7 @@
  * @file
  * FedEx Shipping Quotes module administration menu and callbacks
  *
- * @author Tim Rohaly.
+ * @author Tim Rohaly.    <http://drupal.org/user/202830>
  * @version $Id$
  */
 
@@ -252,7 +252,7 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_labels']['uc_fedex_label_image_format'] = array(
     '#type'          => 'select',
     '#title'         => t('Select image format for shipping labels'),
-    '#default_value' => variable_get('uc_fedex_label_image_format', _uc_fedex_label_image_types()),
+    '#default_value' => variable_get('uc_fedex_label_image_format', 'PDF'),
     '#options'       => _uc_fedex_label_image_types(),
   );
 
@@ -260,7 +260,7 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_labels']['uc_fedex_label_stock'] = array(
     '#type'          => 'select',
     '#title'         => t('Select Laser or Thermal label stock size'),
-    '#default_value' => variable_get('uc_fedex_label_stock', _uc_fedex_label_stock_types()),
+    '#default_value' => variable_get('uc_fedex_label_stock', 'PAPER_7x4.75'),
     '#options'       => _uc_fedex_label_stock_types(),
   );
 
@@ -272,7 +272,7 @@ function uc_fedex_admin_settings() {
     '#options'       => _uc_fedex_label_orientation_types(),
   );
 
-  // Register validation handler
+  // Register additional validation handler
   $form['#validate'][] = 'uc_fedex_admin_settings_validate';
 
   return system_settings_form($form);
