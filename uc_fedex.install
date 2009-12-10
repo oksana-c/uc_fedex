@@ -119,33 +119,8 @@ function uc_fedex_uninstall() {
  * Implementation of hook_update().
  */
 function uc_fedex_update_6200() {
-  $schema = array();
-
-  $schema['uc_fedex_products'] = array(
-    'fields' => array(
-      'vid' => array(
-        'type'     => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default'  => 0,
-      ),
-      'nid' => array(
-        'type'     => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default'  => 0,
-      ),
-      'pkg_type' => array(
-        'type'     => 'varchar',
-        'length'   => 2,
-        'not null' => TRUE,
-        'default'  => '',
-      ),
-    ),
-    'primary key' => array('vid'),
-  );
-
   $ret = array();
+  $schema = uc_fedex_schema();
   db_create_table($ret, 'uc_fedex_products', $schema['uc_fedex_products']);
 
   return $ret;
