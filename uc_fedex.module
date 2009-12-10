@@ -66,6 +66,30 @@ function uc_fedex_init() {
 
 
 /**
+ * Implementation of hook_cron().
+ *
+ * Deletes FedEx shipping labels from the file system automatically
+ * on a periodic basis.  Default period is 1 week.
+ */
+function uc_fedex_cron() {
+
+  $cutoff = time() - variable_get('uc_fedex_label_lifetime', 604800);
+  $path   = file_create_path('fedex_labels');
+  $files  = array_diff(scandir($path), array('.', '..'));
+
+  if ($files) {
+    // Loop over label files in sites/default/files/fedex_labels
+    // and test creation date against 'uc_fedex_label_lifetime'
+    foreach ($files as $file) {
+      if ($cutoff > filectime($path .'/'. $file)) {
+        unlink($path .'/'. $file);
+      }
+    }
+  }
+}
+
+
+/**
  * Implementation of hook_theme() used to declare module theme functions.
  */
 function uc_fedex_theme() {
@@ -693,7 +717,7 @@ function uc_fedex_weight_markup($weight) {
  * $package object returned from this routine contains the following members:
  *   ->quantity     Number of items in package
  *   ->price        Value (sales price, in store currency) of items in package
- *   ->weight       Actual weight (LB) of items in package
+ *   ->weight       Actual weight of items in package, in store weight units
  *   ->weight_units Set to store default, taken from uc_weight_unit variable
  *   ->shipweight   Computed weight of package, including markup
  *

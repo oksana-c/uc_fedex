@@ -272,6 +272,18 @@ function uc_fedex_admin_settings() {
     '#options'       => _uc_fedex_label_orientation_types(),
   );
 
+  $period = drupal_map_assoc(array(86400, 302400, 604800, 1209600, 2419200), 'format_interval');
+
+  // Form to select how long labels stay on server
+  $form['uc_fedex_labels']['uc_fedex_label_lifetime'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Label lifetime'),
+    '#default_value' => variable_get('uc_fedex_label_lifetime', 604800),
+    '#options'       => $period,
+    '#description'   => t('Controls how long labels are stored on the server before being automatically deleted. Cron must be enabled for automatic deletion. Default period is 1 week (604800 seconds).'),
+    '#disabled'      => TRUE,
+  );
+
   // Register additional validation handler
   $form['#validate'][] = 'uc_fedex_admin_settings_validate';
 
