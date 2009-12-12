@@ -112,6 +112,7 @@ function uc_fedex_uninstall() {
   variable_del('uc_fedex_label_image_format');
   variable_del('uc_fedex_label_stock');
   variable_del('uc_fedex_label_orientation');
+  variable_del('uc_fedex_label_image_lifetime');
 }
 
 
