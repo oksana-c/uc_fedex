@@ -15,7 +15,7 @@
 
 
 // Maximum shipping weight for FedEx (non-Freight services)
-define('PACKAGE_WEIGHT_LIMIT', 150.0);  // 150lbs
+define('PACKAGE_WEIGHT_LIMIT_LBS', 150.0);  // 150lbs
 
 // Set to 0 to disable caching of SOAP WSDL when developing your WSDL
 ini_set("soap.wsdl_cache_enabled", "1");
@@ -485,7 +485,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
         'Units'  => $weight_units,
       ),
       // Lengths must be rounded up to nearest integer value
-      // Package size hardwired to 1" x 1" x 1" to force weight-base rate
+      // Package size hardwired to 1" x 1" x 1" to force weight-bases rates
       'Dimensions' => array(
         'Length' => ceil(1.0 * $length_conversion_factor),
         'Width'  => ceil(1.0 * $length_conversion_factor),
@@ -737,19 +737,19 @@ function uc_fedex_weight_markup($weight) {
 function _uc_fedex_package_products($products) {
   $packages = array();
 
-  // Determine maximum weight of products we can put into one
-  // package while staying below PACKAGE_WEIGHT_LIMIT.  This number
+  // Determine maximum weight of products we can put into one package
+  // while staying below PACKAGE_WEIGHT_LIMIT_LBS.  This number
   // depends on the package weight markup set in the FedEx module
   // administration menu.
   $zero_markup = uc_fedex_weight_markup(0);
   if ($zero_markup == 0) {
     // Weight markup is a multiplier, because 0 * multiplier = 0
     // This handles percentage markup too
-    $products_max_weight = PACKAGE_WEIGHT_LIMIT / uc_fedex_weight_markup(1);
+    $products_max_weight = PACKAGE_WEIGHT_LIMIT_LBS / uc_fedex_weight_markup(1);
   }
   else {
     // Weight markup is an additive factor , because 0 + factor = factor != 0
-    $products_max_weight = PACKAGE_WEIGHT_LIMIT - $zero_markup;
+    $products_max_weight = PACKAGE_WEIGHT_LIMIT_LBS - $zero_markup;
   }
 
   // Convert $products_max_weight (which is defined in LB units) into store
@@ -922,6 +922,7 @@ function _uc_fedex_dropoff_types() {
     'STATION'                 => t('Dropoff at FedEx Staffed Location'),
   );
 }
+
 
 /**
  * Convenience function to get FedEx codes for payor.
