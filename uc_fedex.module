@@ -1041,7 +1041,7 @@ function theme_uc_fedex_option_label($service, $packages) {
  */
 function uc_fedex_address_request($address) {
 
-drupal_set_message('<pre>'. var_export($address, TRUE) .'</pre>');
+  //drupal_set_message('<pre>'. var_export($address, TRUE) .'</pre>');
 
   // Set up SOAP call.
   // Allow tracing so details of request can be retrieved for error logging
