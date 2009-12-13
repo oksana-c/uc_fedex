@@ -25,7 +25,7 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_credentials'] = array(
     '#type'          => 'fieldset',
     '#title'         => t('Credentials'),
-    '#description'   => t('Account number and authorization information'),
+    '#description'   => t('Account number and authorization information.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => FALSE,
   );
@@ -215,7 +215,6 @@ function uc_fedex_admin_settings() {
     '#title'         => t('Let FedEx determine if an address is Commercial or Residential'),
     '#default_value' => variable_get('uc_fedex_address_validation', FALSE),
     '#description'   => t('When enabled, FedEx Address Validation Web Service will be used to determine if a shipping address is Commercial or Residential.'),
-    '#disabled'      => TRUE,
   );
 
   // Form to select Residential/Commercial destination address

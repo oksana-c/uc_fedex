@@ -282,13 +282,9 @@ function uc_fedex_quote($products, $details) {
     $destination->country_iso_code_2 = $country_data->country_iso_code_2;
   }
 
-  // Load preference for Residence/Commercial destination address
-  if (variable_get('uc_fedex_residential_quotes', 1)) {
-    $destination->residential = TRUE;
-  }
-  else {
-    $destination->residential = FALSE;
-  }
+  // Determine if address is Residential or Commercial
+  // If Address Validation API is not used or fails, default to store default
+  $destination->residential = uc_fedex_address_is_residential($destination, variable_get('uc_fedex_residential_quotes', 1));
 
   // Call the method that does the actual SOAP request to the FedEx Server
   // Response contains all available services and rates
@@ -1005,7 +1001,7 @@ function _uc_fedex_label_stock_types() {
 function print_request_response($client) {
   if (user_access('configure quotes') &&
       variable_get('uc_quote_display_debug', FALSE)) {
-    drupal_set_message('<h2>FedEx Rate Quote Transaction processed successfully.</h2>'.
+    drupal_set_message('<h2>FedEx Transaction processed successfully.</h2>'.
                        '<h3>Request: </h3><pre>'.
                        check_plain($client->__getLastRequest())  .'</pre>'.
                        '<h3>Response: </h3><pre>'.
@@ -1143,4 +1139,44 @@ drupal_set_message('<pre>'. var_export($address, TRUE) .'</pre>');
   catch (SoapFault $exception) {
     drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>'. $exception->faultcode .'<br /><b>String:</b>'. $exception->faultstring .'<br />', 'error');
   }
+}
+
+
+/**
+ * Convenience function to determine if an address is Residential or
+ * Commercial.  This determination is made using the FedEx Address
+ * Validation API if address validation is enabled in the module admin
+ * settings.  Otherwise, the $default input parameter is used.
+ *
+ * @param $address
+ *   An object holding address data
+ * @param $default
+ *   TRUE if $address is Residential, FALSE otherwise
+ * @return
+ *   TRUE if $address is Residential, FALSE otherwise
+ */
+function uc_fedex_address_is_residential($address, $default=TRUE) {
+  // If desired, use Address API to determine whether FedEx considers
+  // the address to be Residential or Commercial
+  if (variable_get('uc_fedex_address_validation', FALSE)) {
+    $response = uc_fedex_address_request($address);
+    $residential_status = $response->AddressResults->ProposedAddressDetails->ResidentialStatus;
+    switch ($residential_status) {
+      case 'RESIDENTIAL':
+        //drupal_set_message('FedEx classifies this address as RESIDENTIAL');
+        return TRUE;
+        break;
+      case 'BUSINESS':
+        //drupal_set_message('FedEx classifies this address as COMMERCIAL');
+        return FALSE;
+        break;
+      default;
+        //drupal_set_message("FedEx can't determine the address type");
+        // Any other result, fall through to use the store default
+        break;
+    }
+  }
+
+  // Address API validation not wanted, or failed, so return default choice
+  return $default;
 }
