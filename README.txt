@@ -209,6 +209,9 @@ checkbox is selected.
 
 Label Printing
 ==============
+This module currently supports created barcoded shipping labels only
+for FedEx domestic (within the USA) shipping.
+
 The Ship Service is used to generate FedEx barcoded labels that can be
 used for shipping.  Label printing is a FedEx "advanced" service, which
 requires you to call FedEx and have your developer access upgraded to allow
