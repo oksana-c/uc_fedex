@@ -41,11 +41,27 @@ function uc_fedex_menu() {
 
   $items['admin/store/settings/quotes/methods/fedex'] = array(
     'title'            => 'FedEx',
-    'access arguments' => array('configure quotes'),
     'page callback'    => 'drupal_get_form',
     'page arguments'   => array('uc_fedex_admin_settings'),
+    'access arguments' => array('configure quotes'),
     'type'             => MENU_LOCAL_TASK,
     'file'             => 'uc_fedex.admin.inc',
+  );
+
+  $items['admin/store/orders/%uc_order/shipments/fedex'] = array(
+    'title'            => 'FedEx shipment',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('uc_fedex_confirm_shipment', 3),
+    'access arguments' => array('fulfill orders'),
+    'type'             => MENU_CALLBACK,
+    'file'             => 'uc_fedex.ship.inc',
+  );
+
+  $items['admin/store/orders/%uc_order/shipments/labels/fedex'] = array(
+    'page callback'    => 'uc_fedex_label_image',
+    'access arguments' => array('fulfill orders'),
+    'type'             => MENU_CALLBACK,
+    'file'             => 'uc_fedex.ship.inc',
   );
 
   return $items;
@@ -55,13 +71,19 @@ function uc_fedex_menu() {
 /**
  * Implementation of hook_init().
  *
- * Used to load module CSS.  This is the wrong place to do it, because
- * the CSS will be included on every page, not just on the pages where
- * it is needed.  However, this is currently the Ubercart-recommended
- * place for adding shipping quotes CSS.
+ * Used to load module includes and CSS.  This is the wrong place to
+ * add CSS because the CSS will be included on every page, not just on
+ * the pages where it is needed.  However, this is currently the
+ * Ubercart-recommended place for adding shipping quotes CSS.
  */
 function uc_fedex_init() {
-    drupal_add_css(drupal_get_path('module', 'uc_fedex') .'/uc_fedex.css');
+  drupal_add_css(drupal_get_path('module', 'uc_fedex') .'/uc_fedex.css');
+
+  // Address Validation routines
+  module_load_include('inc', 'uc_fedex', 'uc_fedex.aval');
+
+  // Label Printing routines
+  module_load_include('inc', 'uc_fedex', 'uc_fedex.ship');
 }
 
 
@@ -72,7 +94,6 @@ function uc_fedex_init() {
  * on a periodic basis.  Default period is 1 week.
  */
 function uc_fedex_cron() {
-
   $path = file_create_path('fedex_labels');
   if (is_dir($path)) {
   $files = array_diff(scandir($path), array('.', '..'));
@@ -91,7 +112,9 @@ function uc_fedex_cron() {
 
 
 /**
- * Implementation of hook_theme() used to declare module theme functions.
+ * Implementation of hook_theme().
+ *
+ * Used to declare module theme functions.
  */
 function uc_fedex_theme() {
   return array(
@@ -101,6 +124,10 @@ function uc_fedex_theme() {
         'product'  => NULL,
         'packages' => NULL,
       ),
+    ),
+    'uc_fedex_confirm_shipment' => array(
+      'file'      => 'uc_fedex.ship.inc',
+      'arguments' => array('form' => NULL),
     ),
   );
 }
@@ -389,7 +416,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
       'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
   );
 
-  // Optional parameter, contains anything - let admin configure
+  // Optional parameter, contains anything
   $request['TransactionDetail'] = array(
     'CustomerTransactionId' => '*** Rate/Available Services Request v7 from Ubercart ***'
   );
@@ -481,7 +508,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
         'Units'  => $weight_units,
       ),
       // Lengths must be rounded up to nearest integer value
-      // Package size hardwired to 1" x 1" x 1" to force weight-bases rates
+      // Package size hardwired to 1" x 1" x 1" to force weight-based rates
       'Dimensions' => array(
         'Length' => ceil(1.0 * $length_conversion_factor),
         'Width'  => ceil(1.0 * $length_conversion_factor),
@@ -524,111 +551,8 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
       drupal_set_message(t('Error in processing FedEx Shipping Quote transaction.'), 'error');
       foreach ($response->Notifications as $notification) {
         if (is_array($response->Notifications)) {
-          drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
-        }
-        else {
-          drupal_set_message($notification, 'error');
-        }
-      }
-    }
-    return $response;
-  }
-  catch (SoapFault $exception) {
-    drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>'. $exception->faultcode .'<br /><b>String:</b>'. $exception->faultstring .'<br />', 'error');
-    // what else needs to be done here if FedEx quote fails?  What to display
-    // to customer?
-  }
-}
-
-
-/**
- * Constructs and executes a SOAP TrackService request.
- * Returns Tracking information.
- *
- * SOAP call parameters are set in the order they appear in the WSDL file
- * Associative array of DOM returned.
- *
- * @param $tracking_number
- *   FedEx Tracking number
- *
- * @return
- *   Associative array mirroring contents of SOAP object returned from server.
- */
-function uc_fedex_tracking_request($tracking_number) {
-
-  // Set up SOAP call.
-  // Allow tracing so details of request can be retrieved for error logging
-  $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
-              .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
-              .'/TrackService_v3.wsdl', array('trace' => 1));
-
-  // FedEx user key and password filled in by user on admin form
-  $request['WebAuthenticationDetail'] = array(
-    'UserCredential' => array(
-      'Key'      => variable_get('uc_fedex_user_credential_key', 0),
-      'Password' => variable_get('uc_fedex_user_credential_password', 0),
-    )
-  );
-
-  // FedEx account and meter number filled in by user on admin form
-  $request['ClientDetail'] = array(
-      'AccountNumber' => variable_get('uc_fedex_account_number', 0),
-      'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
-  );
-
-  // Optional parameter, contains anything - let admin configure
-  $request['TransactionDetail'] = array(
-    'CustomerTransactionId' => '*** Track Service Request v3 from Ubercart ***'
-  );
-
-  // Track Request v3.0.0
-  $request['Version'] = array(
-    'ServiceId'    => 'trck',   // crs for rate, crss for rate&services
-    'Major'        => '3',
-    'Intermediate' => '0',
-    'Minor'        => '0',
-  );
-
-  // Tracking Number
-  $request['PackageIdentifier'] = array(
-    'Value' => $tracking_number,
-    'Type'  => 'TRACKING_NUMBER_OR_DOORTAG',
-  );
-
-  // Include Details - 1 is TRUE
-  $request['IncludeDetailedScans'] = 1;
-
-  //
-  // Send the SOAP request to the FedEx server
-  //
-  try {
-    $response = $client->track($request);
-
-    if ($response->HighestSeverity != 'FAILURE' &&
-        $response->HighestSeverity != 'ERROR')     {
-      print_request_response($client);
-/*
-      // Just an Example of how to use this information.
-      // You would typically do the following in whatever routine
-      // called this function, not here.
-      $reply = $response->TrackDetails;
-
-      print('Tracking Number = ' . $reply->TrackingNumber . "<br />");
-      print('                  ' . $reply->StatusDescription);
-      print('  by ' . $reply->ServiceInfo);
-      print('  weight ' . $reply->PackageWeight->Value. ' ' . $reply->PackageWeight->Units . "<br />");
-      print('Estimated Delivery ' . $reply->EstimatedDeliveryTimestamp . "<br />");
-
-      foreach($reply->Events as $event) {
-        print('    Event = ' . $event->EventDescription . " " . $event->Address->City . ", " . $event->Address->StateOrProvinceCode . " on " . $event->Timestamp. "<br />");
-      }
-*/
-    }
-    else {
-      drupal_set_message(t('Error in processing FedEx tracking transaction.'), 'error');
-      foreach ($response->Notifications as $notification) {
-        if (is_array($response->Notifications)) {
-          drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
+          drupal_set_message($notification->Severity .': '.
+                             $notification->Message, 'error');
         }
         else {
           drupal_set_message($notification, 'error');
@@ -921,76 +845,6 @@ function _uc_fedex_dropoff_types() {
 
 
 /**
- * Convenience function to get FedEx codes for payor.
- *
- * @return
- *   An array of human-friendly names for the different FedEx payor option codes
- */
-function _uc_fedex_payor_types() {
-  return array(
-    'RECIPIENT'   => t('Shipping billed to Recipient'),
-    'SENDER'      => t('Shipping billed to Sender'),
-    'THIRD_PARTY' => t('Shipping billed to third party'),
-  );
-}
-
-
-/**
- * Convenience function to get FedEx codes for label image format.
- *
- * @return
- *   An array of human-friendly names for the different FedEx label image formats
- */
-function _uc_fedex_label_image_types() {
-  return array(
-    'PNG'   => t('PNG - Portable Next Generation'),
-    'PDF'   => t('PDF - Adobe Portable Document Format'),
-    'EPL2'  => t('EPL2 - Eltron Thermal Printer Format'),
-    'DPL'   => t('DPL - Unimark Thermal Printer Format'),
-    'ZPLII' => t('ZPLII - Zebra Thermal Printer Format'),
-  );
-}
-
-
-/**
- * Convenience function to get FedEx codes for label orientation.
- *
- * @return
- *   An array of human-friendly names for the different FedEx label orientation
- */
-function _uc_fedex_label_orientation_types() {
-  return array(
-    'BOTTOM_EDGE_OF_TEXT_FIRST' => t('BOTTOM_EDGE_OF_TEXT_FIRST'),
-    'TOP_EDGE_OF_TEXT_FIRST'    => t('TOP_EDGE_OF_TEXT_FIRST'),
-  );
-}
-
-
-/**
- * Convenience function to get FedEx codes for label paper stock type.
- *
- * @return
- *   An array of human-friendly names for the different FedEx label paper stock type
- */
-function _uc_fedex_label_stock_types() {
-  return array(
-    'PAPER_4X6'                      => t('Laser 4" x 6"'),
-    'PAPER_4X8'                      => t('Laser 4" x 8"'),
-    'PAPER_4X9'                      => t('Laser 4" x 9"'),
-    'PAPER_7X4.75'                   => t('Laser 7" x 4.75"'),
-    'PAPER_8.5X11_BOTTOM_HALF_LABEL' => t('Laser 8.5" x 11", Label on Bottom Half'),
-    'PAPER_8.5X11_TOP_HALF_LABEL'    => t('Laser 8.5" x 11", Label on Top Half'),
-    'STOCK_4X6'                      => t('Thermal 4" x 6"'),
-    'STOCK_4X6.75_LEADING_DOC_TAB'   => t('Thermal 4" x 6.75", Leading DocTab'),
-    'STOCK_4X6.75_TRAILING_DOC_TAB'  => t('Thermal 4" x 6.75", Trailing DocTab'),
-    'STOCK_4X8'                      => t('Thermal 4" x 8"'),
-    'STOCK_4X9_LEADING_DOC_TAB'      => t('Thermal 4" x 9", Leading DocTab'),
-    'STOCK_4X9_TRAILING_DOC_TAB'     => t('Thermal 4" x 9", Trailing DocTab'),
-  );
-}
-
-
-/**
  * Print SOAP request and response, iff allowed by user access permissions.
  * To view transaction details, set display debug TRUE in
  * admin/store/settings/quotes/edit
@@ -1033,150 +887,4 @@ function theme_uc_fedex_option_label($service, $packages) {
   $output .= ' ('. format_plural(count($packages), '1 package', '@count packages') .')';
 
   return $output;
-}
-
-
-/**
- * Constructs and executes a SOAP AddressValidationService request.
- */
-function uc_fedex_address_request($address) {
-
-  //drupal_set_message('<pre>'. var_export($address, TRUE) .'</pre>');
-
-  // Set up SOAP call.
-  // Allow tracing so details of request can be retrieved for error logging
-  $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
-              .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
-              .'/AddressValidationService_v2.wsdl', array('trace' => 1));
-
-  // FedEx user key and password filled in by user on admin form
-  $request['WebAuthenticationDetail'] = array(
-    'UserCredential' => array(
-      'Key'      => variable_get('uc_fedex_user_credential_key', 0),
-      'Password' => variable_get('uc_fedex_user_credential_password', 0),
-    )
-  );
-
-  // FedEx account and meter number filled in by user on admin form
-  $request['ClientDetail'] = array(
-      'AccountNumber' => variable_get('uc_fedex_account_number', 0),
-      'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
-  );
-
-  // Optional parameter, contains anything - let admin configure
-  $request['TransactionDetail'] = array(
-    'CustomerTransactionId' => '*** Address Validation Request v2 from Ubercart ***'
-  );
-
-  // Address Validation Request v2.0.0
-  $request['Version'] = array(
-    'ServiceId'    => 'aval',
-    'Major'        => '2',
-    'Intermediate' => '0',
-    'Minor'        => '0',
-  );
-
-  // Timestamp
-  $request['RequestTimestamp'] = date('c');
-
-  // Check address accuracy settings
-  $request['Options'] = array(
-    'VerifyAddresses'             => 1,
-    'CheckResidentialStatus'      => 1,
-    'MaximumNumberOfMatches'      => 5,
-    'StreetAccuracy'              => 'LOOSE',
-    'DirectionalAccuracy'         => 'LOOSE',
-    'CompanyNameAccuracy'         => 'LOOSE',
-    'ConvertToUpperCase'          => 0,
-    'RecognizeAlternateCityNames' => 1,
-    'ReturnParsedElements'        => 1
-  );
-
-  $country = uc_get_country_data(array('country_id' => $address->country));
-  $address->country_iso_code_2 = $country[0]['country_iso_code_2'];
-
-  $street_lines   = array();
-  $street_lines[] = $address->street1;
-  if (!empty($address->street2)) $street_lines[] = $address->street2;
-
-  // Get address
-// CompanyName needs to be unset if empty
-  $request['AddressesToValidate'][] = array(
-    'AddressId'   => $address->last_name .', '. $address->first_name,
-//  'CompanyName' => $address->company,
-    'Address'     => array(
-      'StreetLines'         => $street_lines,
-      'City'                => $address->city,
-      'StateOrProvinceCode' => uc_get_zone_code($address->zone),
-      'PostalCode'          => $address->postal_code,
-      'CountryCode'         => $address->country_iso_code_2,
-    ),
-  );
-
-  //
-  // Send the SOAP request to the FedEx server
-  //
-  try {
-    $response = $client->addressValidation($request);
-
-    if ($response->HighestSeverity != 'FAILURE' &&
-        $response->HighestSeverity != 'ERROR')     {
-      print_request_response($client);
-    }
-    else {
-      drupal_set_message(t('Error in processing FedEx Address Validation.'), 'error');
-      foreach ($response->Notifications as $notification) {
-        if (is_array($response->Notifications)) {
-          drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
-        }
-        else {
-          drupal_set_message($notification, 'error');
-        }
-      }
-    }
-    return $response;
-  }
-  catch (SoapFault $exception) {
-    drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>'. $exception->faultcode .'<br /><b>String:</b>'. $exception->faultstring .'<br />', 'error');
-  }
-}
-
-
-/**
- * Convenience function to determine if an address is Residential or
- * Commercial.  This determination is made using the FedEx Address
- * Validation API if address validation is enabled in the module admin
- * settings.  Otherwise, the $default input parameter is used.
- *
- * @param $address
- *   An object holding address data
- * @param $default
- *   TRUE if $address is Residential, FALSE otherwise
- * @return
- *   TRUE if $address is Residential, FALSE otherwise
- */
-function uc_fedex_address_is_residential($address, $default=TRUE) {
-  // If desired, use Address API to determine whether FedEx considers
-  // the address to be Residential or Commercial
-  if (variable_get('uc_fedex_address_validation', FALSE)) {
-    $response = uc_fedex_address_request($address);
-    $residential_status = $response->AddressResults->ProposedAddressDetails->ResidentialStatus;
-    switch ($residential_status) {
-      case 'RESIDENTIAL':
-        //drupal_set_message('FedEx classifies this address as RESIDENTIAL');
-        return TRUE;
-        break;
-      case 'BUSINESS':
-        //drupal_set_message('FedEx classifies this address as COMMERCIAL');
-        return FALSE;
-        break;
-      default;
-        //drupal_set_message("FedEx can't determine the address type");
-        // Any other result, fall through to use the store default
-        break;
-    }
-  }
-
-  // Address API validation not wanted, or failed, so return default choice
-  return $default;
 }
