@@ -38,7 +38,7 @@ function uc_fedex_tracking_request($tracking_number) {
   // Allow tracing so details of request can be retrieved for error logging
   $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
               .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
-              .'/TrackService_v3.wsdl', array('trace' => 1));
+              .'/TrackService_v4.wsdl', array('trace' => 1));
 
   // FedEx user key and password filled in by user on admin form
   $request['WebAuthenticationDetail'] = array(
@@ -56,13 +56,13 @@ function uc_fedex_tracking_request($tracking_number) {
 
   // Optional parameter, contains anything
   $request['TransactionDetail'] = array(
-    'CustomerTransactionId' => '*** Track Service Request v3 from Ubercart ***'
+    'CustomerTransactionId' => '*** Track Service Request v4 from Ubercart ***'
   );
 
-  // Track Request v3.0.0
+  // Track Request v4.0.0
   $request['Version'] = array(
-    'ServiceId'    => 'trck',   // crs for rate, crss for rate&services
-    'Major'        => '3',
+    'ServiceId'    => 'trck',
+    'Major'        => '4',
     'Intermediate' => '0',
     'Minor'        => '0',
   );
@@ -73,8 +73,8 @@ function uc_fedex_tracking_request($tracking_number) {
     'Type'  => 'TRACKING_NUMBER_OR_DOORTAG',
   );
 
-  // Include Details - 1 is TRUE
-  $request['IncludeDetailedScans'] = 1;
+  // Include Details
+  $request['IncludeDetailedScans'] = TRUE;
 
   //
   // Send the SOAP request to the FedEx server
