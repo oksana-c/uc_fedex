@@ -193,8 +193,9 @@ you specify cutoff times and closed days for your store.
 Address Validation
 ==================
 The FedEx Address Validation Web Service can be used to determine whether a
-destination address is Commercial or Residential.  Address Validation is
-a FedEx "advanced" service, which requires you to call FedEx and have your
+U.S., Puerto Rico or Canada delivery addresses is Commercial or Residential.
+FedEx does not support validation for any other location.  Address Validation
+is a FedEx "advanced" service, which requires you to call FedEx and have your
 developer access upgraded to allow you to use this service.  You will have
 to do this even for both the Test server and the Development server separately.
 If the checkbox "Let FedEx determine if an address is Commercial or Residential"
