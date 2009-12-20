@@ -81,9 +81,6 @@ function uc_fedex_init() {
 
   // Address Validation routines
   module_load_include('inc', 'uc_fedex', 'uc_fedex.aval');
-
-  // Label Printing routines
-  module_load_include('inc', 'uc_fedex', 'uc_fedex.ship');
 }
 
 
@@ -96,7 +93,7 @@ function uc_fedex_init() {
 function uc_fedex_cron() {
   $path = file_create_path('fedex_labels');
   if (is_dir($path)) {
-  $files = array_diff(scandir($path), array('.', '..'));
+    $files = array_diff(scandir($path), array('.', '..'));
     if ($files) {
       // Loop over label files in sites/default/files/fedex_labels
       // and test creation date against 'uc_fedex_label_lifetime'
@@ -215,6 +212,12 @@ function uc_fedex_shipping_method() {
         'callback'     => 'uc_fedex_quote',
         'accessorials' => _uc_fedex_services(),
       ),
+      'ship'    => array(
+        'type'      => 'small_package',
+        'callback'  => 'uc_fedex_fulfill_order',
+        'file'      => 'uc_fedex.ship.inc',
+        'pkg_types' => _uc_fedex_package_types(),
+      ),
       'enabled' => $enabled['fedex'],
       'weight'  => $weight['fedex'],
     ),
@@ -280,6 +283,19 @@ function uc_fedex_store_status() {
  *   JSON object containing rate, error, and debugging information.
  */
 function uc_fedex_quote($products, $details) {
+
+  // The uc_quote AJAX query can fire before the customer has completely
+  // filled out the destination address, so check to see whether the address
+  // is complete. If not, abort.
+  $destination = (object) $details;
+  if (empty($destination->street1)     ||
+      empty($destination->city)        ||
+      empty($destination->zone)        ||
+      empty($destination->postal_code) ||
+      empty($destination->country)       ) {
+    // Skip this shipping method.
+    return array();
+  }
 
   // Assign products to one or more packages for quoting
   $packages = _uc_fedex_package_products($products);
