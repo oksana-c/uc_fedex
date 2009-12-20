@@ -197,7 +197,7 @@ function uc_fedex_admin_settings() {
     '#type'          => 'textfield',
     '#title'         => t('FedEx Shipping Weight Markup'),
     '#default_value' => variable_get('uc_fedex_weight_markup', '0'),
-    '#description'   => t('Markup FedEx shipping weight before quote by weight amount, percentage, or multiplier.'),
+    '#description'   => t('Markup FedEx shipping weight on a per-package basis before quote, by weight amount, percentage, or multiplier.'),
   );
 
   // Container for validation forms
@@ -259,7 +259,7 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_labels']['uc_fedex_label_stock'] = array(
     '#type'          => 'select',
     '#title'         => t('Select Laser or Thermal label stock size'),
-    '#default_value' => variable_get('uc_fedex_label_stock', 'PAPER_7x4.75'),
+    '#default_value' => variable_get('uc_fedex_label_stock', 'PAPER_7X4.75'),
     '#options'       => _uc_fedex_label_stock_types(),
   );
 
@@ -280,7 +280,6 @@ function uc_fedex_admin_settings() {
     '#default_value' => variable_get('uc_fedex_label_lifetime', 604800),
     '#options'       => $period,
     '#description'   => t('Controls how long labels are stored on the server before being automatically deleted. Cron must be enabled for automatic deletion. Default period is 1 week (604800 seconds).'),
-    '#disabled'      => TRUE,
   );
 
   // Register additional validation handler
