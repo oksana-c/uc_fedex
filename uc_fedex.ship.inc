@@ -765,13 +765,6 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
  *
  * @see
  *   uc_fedex_fulfill_order()
-
-
-/**
- * Pass final information into shipment object.
- *
- * @see
- *   uc_fedex_fulfill_order()
  *   uc_fedex_confirm_shipment()
  */
 function uc_fedex_fulfill_order_submit($form, &$form_state) {
