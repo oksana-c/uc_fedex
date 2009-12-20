@@ -21,6 +21,9 @@
  */
 function uc_fedex_admin_settings() {
 
+  // Label printing routines
+  module_load_include('inc', 'uc_fedex', 'uc_fedex.ship');
+
   // Container for credentials forms
   $form['uc_fedex_credentials'] = array(
     '#type'          => 'fieldset',
@@ -155,7 +158,7 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_markups'] = array(
     '#type'          => 'fieldset',
     '#title'         => t('Markups'),
-    '#description'   => t('Modifiers to the shipping weight and quoted rate'),
+    '#description'   => t('Modifiers to the shipping weight and quoted rate.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => FALSE,
   );
