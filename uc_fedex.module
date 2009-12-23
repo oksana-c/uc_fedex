@@ -693,69 +693,114 @@ function _uc_fedex_package_products($products) {
   // results in store default weight units
   $products_max_weight = $products_max_weight * uc_weight_conversion('LB', variable_get('uc_weight_unit', 'LB'));
 
-//if (variable_get('uc_fedex_all_in_one', TRUE)) {
-//}
-//else {
-//}
+  if (variable_get('uc_fedex_all_in_one', TRUE)) {
+    // All products in one package, break by weight
 
-  // Create first package
-  $package = new stdClass();
-  $package->quantity     = 0;
-  $package->price        = 0.0;
-  $package->weight       = 0.0;
-  $package->weight_units = variable_get('uc_weight_unit', 'LB');
+    // Create first package
+    $package = new stdClass();
+    $package->quantity     = 0;
+    $package->price        = 0.0;
+    $package->weight       = 0.0;
+    $package->weight_units = variable_get('uc_weight_unit', 'LB');
 
-  // Loop over products
-  foreach ($products as $product) {
-    // Get item weight. Weight units are set on a per-product basis, so
-    // we convert as necessary in order to perform all calculations in the
-    // store weight units.
-    $item_weight = $product->weight * uc_weight_conversion($product->weight_units, variable_get('uc_weight_unit', 'LB'));
+    // Loop over products
+    foreach ($products as $product) {
+      // Get item weight. Weight units are set on a per-product basis, so
+      // we convert as necessary in order to perform all calculations in the
+      // store weight units.
+      $item_weight = $product->weight * uc_weight_conversion($product->weight_units, variable_get('uc_weight_unit', 'LB'));
 
-    if ($item_weight >= $products_max_weight) {
-      // This product is too heavy to ship via FexEx Ground or FedEx Express -
-      // quit with error
-      return array();
+      if ($item_weight >= $products_max_weight) {
+        // This product is too heavy to ship via FexEx Ground or FedEx Express -
+        // quit with error
+        return array();
+      }
+
+      // Loop over qty of each product
+      for ($item=0; $item<$product->qty; $item++) {
+        // Test to see if putting this item into the current package put us
+        // over the weight limit
+        if (($package->weight + $item_weight) < $products_max_weight) {
+          // No?  Then update the package information and continue
+          $package->quantity += 1;
+          $package->price    += $product->price;
+          $package->weight   += $item_weight;
+        }
+        else {
+          // If weight >= maximum allowed weight, save current package to
+          // array and start a new package:
+
+          // First, markup weight of current package
+          $package->shipweight = uc_fedex_weight_markup($package->weight);
+
+          // Second, save current package to array
+          $packages[] = $package;
+
+          // Finally, start a new package
+          $package = new stdClass();
+          $package->quantity     = 1;
+          $package->price        = $product->price;
+          $package->weight       = $item_weight;
+          $package->weight_units = variable_get('uc_weight_unit', 'LB');
+        }
+      }
     }
 
-    // Loop over qty of each product
-    for ($item=0; $item<$product->qty; $item++) {
-      // Test to see if putting this item into the current package put us
-      // over the weight limit
-      if (($package->weight + $item_weight) < $products_max_weight) {
-        // No?  Then update the package information and continue
-        $package->quantity += 1;
-        $package->price    += $product->price;
-        $package->weight   += $item_weight;
-      }
-      else {
-        // If weight >= maximum allowed weight, save current package to
-        // array and start a new package:
+    // No more products left to package
+    // Take care of the partially-filled package we were working on
 
-        // First, markup weight of current package
+    // First, markup weight of partially-filled package
+    $package->shipweight = uc_fedex_weight_markup($package->weight);
+
+    // Second, save the partially-filled package to the array and exit
+    $packages[] = $package;
+  }
+  else { // variable_get('uc_fedex_all_in_one', TRUE) == FALSE
+    // Each product line item in its own package, subject only to pkg_qty
+
+    // Loop over products
+    foreach ($products as $product) {
+      // If pkg_qty == 0 we assume no limit on package quantity
+      if (!$product->pkg_qty) {
+        // Put all of this product line item into one package
+        $product->pkg_qty = $product->qty;
+      }
+      // Calculate number of full packages
+      $num_of_pkgs = (int)($product->qty / $product->pkg_qty);
+      if ($num_of_pkgs) {
+        for ($i=0; $i<$num_of_pkgs; $i++) {
+          // Create full packages
+          $package = new stdClass();
+          $package->quantity     = $product->pkg_qty;
+          $package->price        = $product->price  * $product->pkg_qty;
+          $package->weight       = $product->weight * $product->pkg_qty;
+          $package->weight_units = variable_get('uc_weight_unit', 'LB');
+
+          // Markup weight on a per-package basis
+          $package->shipweight = uc_fedex_weight_markup($package->weight);
+
+          // Save current package to array
+          $packages[] = $package;
+        }
+      }
+      // Deal with the remaining partially-full package
+      $remaining_qty = $product->qty % $product->pkg_qty;
+      if ($remaining_qty) {
+        // Create partially-full packages
+        $package = new stdClass();
+        $package->quantity     = $remaining_qty;
+        $package->price        = $product->price  * $remaining_qty;
+        $package->weight       = $product->weight * $remaining_qty;
+        $package->weight_units = variable_get('uc_weight_unit', 'LB');
+
+        // Markup weight on a per-package basis
         $package->shipweight = uc_fedex_weight_markup($package->weight);
 
-        // Second, save current package to array
+        // Save package to array
         $packages[] = $package;
-
-        // Finally, start a new package
-        $package = new stdClass();
-        $package->quantity     = 1;
-        $package->price        = $product->price;
-        $package->weight       = $item_weight;
-        $package->weight_units = variable_get('uc_weight_unit', 'LB');
       }
     }
   }
-
-  // No more products left to package
-  // Take care of the partially-filled package we were working on
-
-  // First, markup weight of partially-filled package
-  $package->shipweight = uc_fedex_weight_markup($package->weight);
-
-  // Second, save the partially-filled package to the array and exit
-  $packages[] = $package;
 
   return $packages;
 }
