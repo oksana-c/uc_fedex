@@ -213,20 +213,13 @@ function uc_fedex_address_validate($form, &$form_state) {
     }
   }
 
-//$delivery_values = $form_state['values']['panes']['delivery'];
-//$address->company     = $delivery_values['delivery_company'];
-//$address->street1     = $delivery_values['delivery_street1'];
-//$address->street2     = $delivery_values['delivery_street2'];
-//$address->city        = $delivery_values['delivery_city'];
-//$address->zone        = $delivery_values['delivery_zone'];
-//$address->postal_code = $delivery_values['delivery_postal_code'];
-//$address->country     = $delivery_values['delivery_country'];
-
-drupal_set_message('<pre>in address validation function: '. var_export($address, TRUE) .'</pre>');
+drupal_set_message('<pre>address to validate: '. var_export($address, TRUE) .'</pre>');
 
   // Call FedEx Address Validation Web Service
   $response = uc_fedex_address_request($address);
   $address_details = $response->AddressResults->ProposedAddressDetails;
+
+drupal_set_message('<pre>proposed address after validation: '. var_export($address_details->Address, TRUE) .'</pre>');
 
 drupal_set_message('<pre>response: '. var_export($address_details->Address->StreetLines, TRUE) .'</pre>');
 
