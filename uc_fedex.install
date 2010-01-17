@@ -122,7 +122,7 @@ function uc_fedex_uninstall() {
 function uc_fedex_update_6200() {
   $ret = array();
   $schema = drupal_get_schema('uc_fedex_products', TRUE);
-  db_create_table($ret, 'uc_fedex_products', $schema['uc_fedex_products']);
+  db_create_table($ret, 'uc_fedex_products', $schema);
 
   return $ret;
 }
