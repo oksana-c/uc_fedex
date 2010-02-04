@@ -309,4 +309,12 @@ function uc_fedex_admin_settings_validate($form, &$form_state) {
       form_set_error('uc_fedex_user_credential_password', t('Password field is required.'));
     }
   }
+
+  if (!is_numeric($form_state['values']['uc_fedex_rate_markup'])) {
+    form_set_error('uc_fedex_rate_markup', t('Rate markup must be a numeric value.'));
+  }
+
+  if (!is_numeric($form_state['values']['uc_fedex_weight_markup'])) {
+    form_set_error('uc_fedex_weight_markup', t('Weight markup must be a numeric value.'));
+  }
 }
