@@ -5,4 +5,4 @@
   Drupal.behaviors.uc_fedex = function() {
   };
 
-}) (jQuery)  // End local scope for $
+}) (jQuery);  // End local scope for $
