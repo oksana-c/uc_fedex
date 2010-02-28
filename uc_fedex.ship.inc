@@ -79,6 +79,11 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
   // Timestamp
   $request['RequestedShipment']['ShipTimestamp'] = date('c');
 
+  // Drupal 6.x version of format_date() doesn't support 'c', so until
+  // then we use date() directly.  date() doesn't take care of site
+  // timezone, though.
+  //$request['RequestedShipment']['ShipTimestamp'] = format_date(time(), 'custom', 'c');
+
   // Set Pickup/Dropoff type
   $request['RequestedShipment']['DropoffType'] = variable_get('uc_fedex_dropoff_type', 'REGULAR_PICKUP');
 
