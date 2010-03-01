@@ -79,6 +79,9 @@ function uc_fedex_menu() {
 function uc_fedex_init() {
   drupal_add_css(drupal_get_path('module', 'uc_fedex') .'/uc_fedex.css');
 
+// Can we conditionally load based on
+// variable_get('uc_fedex_address_validation', FALSE) ?
+
   // Address Validation routines
   module_load_include('inc', 'uc_fedex', 'uc_fedex.aval');
 }
@@ -144,11 +147,43 @@ function uc_fedex_ca_predicate() {
   $enabled = variable_get('uc_quote_enabled', array());
 
   $predicates = array(
+    'uc_fedex_get_ground_quote' => array(
+      '#title'   => t('Shipping quote from FedEx Ground'),
+      '#trigger' => 'get_quote_from_fedex_ground',
+      '#class'   => 'uc_fedex',
+      '#status'  => $enabled['fedex_ground'],
+      '#actions' => array(
+        array(
+          '#name'         => 'uc_quote_action_get_quote',
+          '#title'        => t('Fetch a shipping quote'),
+          '#argument_map' => array(
+            'order'  => 'order',
+            'method' => 'method',
+          ),
+        ),
+      ),
+    ),
     'uc_fedex_get_quote' => array(
       '#title'   => t('Shipping quote from FedEx'),
       '#trigger' => 'get_quote_from_fedex',
       '#class'   => 'uc_fedex',
       '#status'  => $enabled['fedex'],
+      '#actions' => array(
+        array(
+          '#name'         => 'uc_quote_action_get_quote',
+          '#title'        => t('Fetch a shipping quote'),
+          '#argument_map' => array(
+            'order'  => 'order',
+            'method' => 'method',
+          ),
+        ),
+      ),
+    ),
+    'uc_fedex_get_freight_quote' => array(
+      '#title'   => t('Shipping quote from FedEx Freight'),
+      '#trigger' => 'get_quote_from_fedex_freight',
+      '#class'   => 'uc_fedex',
+      '#status'  => $enabled['fedex_freight'],
       '#actions' => array(
         array(
           '#name'         => 'uc_quote_action_get_quote',
@@ -199,18 +234,40 @@ function uc_fedex_shipping_type() {
  *   Array of FedEx shipping services
  */
 function uc_fedex_shipping_method() {
-  $enabled = variable_get('uc_quote_enabled', array('fedex' => TRUE));
-  $weight  = variable_get('uc_quote_method_weight', array('fedex' => 0));
+  $enabled = variable_get('uc_quote_enabled', array());
+  $weight  = variable_get('uc_quote_method_weight', array(
+    'fedex_ground'  => 0,
+    'fedex'         => 1,
+    'fedex_freight' => 2,
+  ));
 
   $methods = array(
-    'fedex' => array(
-      'id'      => 'fedex',
+    'fedex_ground' => array(
+      'id'      => 'fedex_ground',
       'module'  => 'uc_fedex',
-      'title'   => t('FedEx'),
+      'title'   => t('FedEx (Ground)'),
       'quote'   => array(
         'type'         => 'small_package',
         'callback'     => 'uc_fedex_quote',
-        'accessorials' => _uc_fedex_services(),
+        'accessorials' => _uc_fedex_ground_services(),
+      ),
+      'ship'    => array(
+        'type'      => 'small_package',
+        'callback'  => 'uc_fedex_fulfill_order',
+        'file'      => 'uc_fedex.ship.inc',
+        'pkg_types' => _uc_fedex_package_types(),
+      ),
+      'enabled' => $enabled['fedex_ground'],
+      'weight'  => $weight['fedex_ground'],
+    ),
+    'fedex' => array(
+      'id'      => 'fedex',
+      'module'  => 'uc_fedex',
+      'title'   => t('FedEx (Express)'),
+      'quote'   => array(
+        'type'         => 'small_package',
+        'callback'     => 'uc_fedex_quote',
+        'accessorials' => _uc_fedex_express_services(),
       ),
       'ship'    => array(
         'type'      => 'small_package',
@@ -220,6 +277,18 @@ function uc_fedex_shipping_method() {
       ),
       'enabled' => $enabled['fedex'],
       'weight'  => $weight['fedex'],
+    ),
+    'fedex_freight' => array(
+      'id'      => 'fedex_freight',
+      'module'  => 'uc_fedex',
+      'title'   => t('FedEx (Freight)'),
+      'quote'   => array(
+        'type'         => 'small_package',
+        'callback'     => 'uc_fedex_quote',
+        'accessorials' => _uc_fedex_freight_services(),
+      ),
+      'enabled' => $enabled['fedex_freight'],
+      'weight'  => $weight['fedex_freight'],
     ),
   );
 
@@ -282,7 +351,7 @@ function uc_fedex_store_status() {
  * @return
  *   JSON object containing rate, error, and debugging information.
  */
-function uc_fedex_quote($products, $details) {
+function uc_fedex_quote($products, $details, $method) {
 
   // The uc_quote AJAX query can fire before the customer has completely
   // filled out the destination address, so check to see whether the address
@@ -335,17 +404,28 @@ function uc_fedex_quote($products, $details) {
 
   // Construct an array containing only those services that the
   // store admin has allowed in admin/store/settings/quotes/edit
-  $fedex_services = array_filter(variable_get('uc_fedex_services', _uc_fedex_services()));
+  $fedex_services = array();
+  switch ($method['id']) {
+    case 'fedex_ground':
+      $fedex_services = array_filter(variable_get('uc_fedex_ground_services', _uc_fedex_ground_services()));
+      break;
+    case 'fedex':
+      $fedex_services = array_filter(variable_get('uc_fedex_express_services', _uc_fedex_express_services()));
+      break;
+    case 'fedex_freight':
+      $fedex_services = array_filter(variable_get('uc_fedex_freight_services', _uc_fedex_freight_services()));
+      break;
+  }
 
-  $quotes = array();
-  $method = uc_fedex_shipping_method();
+  // Initialize return array
+  $quotes  = array();
 
   if (!isset($response->RateReplyDetails)) {
     // Memphis, we have a problem ...
     // Error returned from FedEx server - will print in $message box
     // Don't even try to extract a quote from the response, just return
     // empty quote array.
-    return array();
+    return $quotes;
   }
 
   // Test responses to see if we are interested in that service
@@ -377,7 +457,7 @@ function uc_fedex_quote($products, $details) {
       $quotes[$service] = array(
         'rate'         => $rate,
         'format'       => uc_currency_format($rate),
-        'option_label' => theme('uc_fedex_option_label', $method['fedex']['quote']['accessorials'][$service], $packages),  // cart pane
+        'option_label' => theme('uc_fedex_option_label', $method['quote']['accessorials'][$service], $packages),  // cart pane
       );
     }
   }
@@ -478,6 +558,11 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
 // Probably have to make an admin menu option with cutoff time, after
 // which ShipDate becomes "tomorrow" unless of course tomorrow is a
 // weekend when you're closed...  But this shouldn't affect the rate
+
+  // Drupal 6.x version of format_date() doesn't support 'c', so until
+  // then we use date() directly.  date() doesn't take care of site
+  // timezone, though.
+  //$request['RequestedShipment']['ShipTimestamp'] = format_date(time(), 'custom', 'c');
   $request['RequestedShipment']['ShipTimestamp'] = date('c');
 
   //
@@ -502,9 +587,8 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     $weight_units = 'LB';
   }
 
-  // FedEx supports only IN and CM; if store units are set to
-  // something else then determine conversion factor to apply
-  // to package lengths
+  // FedEx supports only IN and CM; if store units are set to something
+  // else then determine conversion factor to apply to package lengths
   $length_units = strtoupper(variable_get('uc_length_unit', 'IN'));
   $length_conversion_factor = 1;
   if ($length_units != 'IN' && $length_units != 'CM') {
@@ -513,7 +597,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   }
 
   // Iterate over $packages to account for multi-package shipments
-  $sequence = 1;
+  $sequence = 0;
   foreach ($packages as $package) {
     $sequence++;
     $package_properties = array(
@@ -826,34 +910,62 @@ function _uc_fedex_package_types() {
 
 
 /**
- * Convenience function to get FedEx codes for their services.
+ * Convenience function to get FedEx codes for their Ground services.
  * This should probably be sucked out of the WSDL file, to be sure
  * the options stay correct and up-to-date.
  *
  * @return
  *   An array of human-friendly names for the different FedEx service codes
  */
-function _uc_fedex_services() {
+function _uc_fedex_ground_services() {
   return array(
-    'FEDEX_GROUND'                        => t('FedEx Ground'),
-    'GROUND_HOME_DELIVERY'                => t('FedEx Home Delivery'),
+    'FEDEX_GROUND'         => t('FedEx Ground'),
+    'GROUND_HOME_DELIVERY' => t('FedEx Home Delivery'),
+  );
+}
+
+
+/**
+ * Convenience function to get FedEx codes for their Express services.
+ * This should probably be sucked out of the WSDL file, to be sure
+ * the options stay correct and up-to-date.
+ *
+ * @return
+ *   An array of human-friendly names for the different FedEx service codes
+ */
+function _uc_fedex_express_services() {
+  return array(
     'STANDARD_OVERNIGHT'                  => t('FedEx Standard Overnight'),
     'PRIORITY_OVERNIGHT'                  => t('FedEx Priority Overnight'),
     'FIRST_OVERNIGHT'                     => t('FedEx First Overnight'),
     'FEDEX_2_DAY'                         => t('FedEx 2nd Day'),
     'FEDEX_EXPRESS_SAVER'                 => t('FedEx Express Saver'),
-    'FEDEX_1_DAY_FREIGHT'                 => t('FedEx 1-Day Freight'),
-    'FEDEX_2_DAY_FREIGHT'                 => t('FedEx 2-Day Freight'),
-    'FEDEX_3_DAY_FREIGHT'                 => t('FedEx 3-Day Freight'),
     'EUROPE_FIRST_INTERNATIONAL_PRIORITY' => t('FedEx Europe First International Priority'),
     'INTERNATIONAL_ECONOMY'               => t('FedEx International Economy'),
-    'INTERNATIONAL_ECONOMY_FREIGHT'       => t('FedEx International Economy Freight'),
     'INTERNATIONAL_ECONOMY_DISTRIBUTION'  => t('FedEx International Economy Distribution'),
     'INTERNATIONAL_PRIORITY'              => t('FedEx International Priority'),
-    'INTERNATIONAL_PRIORITY_FREIGHT'      => t('FedEx International Priority Freight'),
     'INTERNATIONAL_PRIORITY_DISTRIBUTION' => t('FedEx International Priority Distribution'),
     'INTERNATIONAL_FIRST'                 => t('FedEx International First'),
-    'INTERNATIONAL_DISTRIBUTION_FREIGHT'  => t('FedEx International Distribution Freight'),
+  );
+}
+
+
+/**
+ * Convenience function to get FedEx codes for their Freight services.
+ * This should probably be sucked out of the WSDL file, to be sure
+ * the options stay correct and up-to-date.
+ *
+ * @return
+ *   An array of human-friendly names for the different FedEx service codes
+ */
+function _uc_fedex_freight_services() {
+  return array(
+    'FEDEX_1_DAY_FREIGHT'                => t('FedEx 1-Day Freight'),
+    'FEDEX_2_DAY_FREIGHT'                => t('FedEx 2-Day Freight'),
+    'FEDEX_3_DAY_FREIGHT'                => t('FedEx 3-Day Freight'),
+    'INTERNATIONAL_ECONOMY_FREIGHT'      => t('FedEx International Economy Freight'),
+    'INTERNATIONAL_PRIORITY_FREIGHT'     => t('FedEx International Priority Freight'),
+    'INTERNATIONAL_DISTRIBUTION_FREIGHT' => t('FedEx International Distribution Freight'),
   );
 }
 

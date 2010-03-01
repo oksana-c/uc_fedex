@@ -86,12 +86,30 @@ function uc_fedex_admin_settings() {
   );
 
   // Form to restrict FedEx services available to customer
-  $form['uc_fedex_service_selection']['uc_fedex_services'] = array(
+  $form['uc_fedex_service_selection']['uc_fedex_ground_services'] = array(
     '#type'          => 'checkboxes',
-    '#title'         => t('FedEx Services'),
-    '#default_value' => variable_get('uc_fedex_services', _uc_fedex_services()),
-    '#options'       => _uc_fedex_services(),
-    '#description'   => t('Select the FedEx services customers are allowed to use.'),
+    '#title'         => t('FedEx Ground Services'),
+    '#default_value' => variable_get('uc_fedex_ground_services', _uc_fedex_ground_services()),
+    '#options'       => _uc_fedex_ground_services(),
+    '#description'   => t('Select the FedEx Ground services customers are allowed to use.'),
+  );
+
+  // Form to restrict FedEx services available to customer
+  $form['uc_fedex_service_selection']['uc_fedex_express_services'] = array(
+    '#type'          => 'checkboxes',
+    '#title'         => t('FedEx Express Services'),
+    '#default_value' => variable_get('uc_fedex_express_services', _uc_fedex_express_services()),
+    '#options'       => _uc_fedex_express_services(),
+    '#description'   => t('Select the FedEx Express services customers are allowed to use.'),
+  );
+
+  // Form to restrict FedEx services available to customer
+  $form['uc_fedex_service_selection']['uc_fedex_freight_services'] = array(
+    '#type'          => 'checkboxes',
+    '#title'         => t('FedEx Freight Services'),
+    '#default_value' => variable_get('uc_fedex_freight_services', _uc_fedex_freight_services()),
+    '#options'       => _uc_fedex_freight_services(),
+    '#description'   => t('Select the FedEx Freight services customers are allowed to use.'),
   );
 
   // Container for quote options forms
