@@ -480,9 +480,8 @@ function uc_fedex_label_image() {
  * @param $package_ids
  *   Array of package ids to shipped.
  * @ingroup forms
- * @see
- *   uc_fedex_fulfill_order_validate()
- *   uc_fedex_fulfill_order_submit()
+ * @see uc_fedex_fulfill_order_validate()
+ * @see uc_fedex_fulfill_order_submit()
  */
 function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
   $form = array();
@@ -657,9 +656,8 @@ function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
 /**
  * Pass final information into shipment object.
  *
- * @see
- *   uc_fedex_fulfill_order()
- *   uc_fedex_confirm_shipment()
+ * @see uc_fedex_fulfill_order()
+ * @see uc_fedex_confirm_shipment()
  */
 function uc_fedex_fulfill_order_validate($form, &$form_state) {
   $origin      = new stdClass();
@@ -768,9 +766,8 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
 /**
  * Pass final information into shipment object.
  *
- * @see
- *   uc_fedex_fulfill_order()
- *   uc_fedex_confirm_shipment()
+ * @see uc_fedex_fulfill_order()
+ * @see uc_fedex_confirm_shipment()
  */
 function uc_fedex_fulfill_order_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/store/orders/'. $form_state['values']['order_id'] .'/shipments/fedex';
