@@ -90,6 +90,7 @@ function uc_fedex_uninstall() {
   variable_del('uc_fedex_user_credential_key');
   variable_del('uc_fedex_user_credential_password');
   variable_del('uc_fedex_account_number');
+  variable_del('uc_fedex_freight_account_number');
   variable_del('uc_fedex_meter_number');
   variable_del('uc_fedex_server_role');
 
