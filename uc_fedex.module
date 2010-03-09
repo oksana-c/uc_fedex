@@ -435,15 +435,27 @@ function uc_fedex_quote($products, $details, $method) {
     if (in_array($service, $fedex_services)) {
       // Check to see if we're quoting ACCOUNT or LIST rates
       if (variable_get('uc_fedex_quote_type', 'list') == 'list') {  // LIST rate
-        // LIST quotes return both ACCOUNT rates (in RatedShipmentDetails[0])
-        // and LIST rates (in RatedShipmentDetails[1])
-        $ratedetail = $options->RatedShipmentDetails[1];
+        // LIST quotes return both ACCOUNT rates and LIST rates:
+        // Order not guaranteed.
+        //   RatedShipmentDetails[0] = PAYOR_ACCOUNT
+        //   RatedShipmentDetails[1] = RATED_ACCOUNT
+        //   RatedShipmentDetails[2] = PAYOR_LIST
+        //   RatedShipmentDetails[3] = RATED_LIST
+        foreach ($options->RatedShipmentDetails as $ratedetail) {
+          if ($ratedetail->ShipmentRateDetail->RateType == 'PAYOR_LIST') {
+            break;
+          }
+        }
       }
       else {  // ACCOUNT rate
         // ACCOUNT quotes may return either ACCOUNT rates only OR
         // ACCOUNT rates and LIST rates.  Check.
         if (is_array($options->RatedShipmentDetails)) {
-          $ratedetail = $options->RatedShipmentDetails[0];
+          foreach ($options->RatedShipmentDetails as $ratedetail) {
+            if ($ratedetail->ShipmentRateDetail->RateType == 'PAYOR_ACCOUNT') {
+              break;
+            }
+          }
         }
         else {
           $ratedetail = $options->RatedShipmentDetails;
