@@ -508,7 +508,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   // Allow tracing so details of request can be retrieved for error logging
   $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
               .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
-              .'/RateService_v7.wsdl', array('trace' => 1));
+              .'/RateService_v8.wsdl', array('trace' => 1));
 
   // FedEx user key and password filled in by user on admin form
   $request['WebAuthenticationDetail'] = array(
@@ -526,13 +526,13 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
 
   // Optional parameter, contains anything
   $request['TransactionDetail'] = array(
-    'CustomerTransactionId' => '*** Rate/Available Services Request v7 from Ubercart ***'
+    'CustomerTransactionId' => '*** Rate/Available Services Request v8 from Ubercart ***'
   );
 
-  // Rate Services Availability Request v7.0.0
+  // Rate Services Availability Request v8.0.0
   $request['Version'] = array(
     'ServiceId'    => 'crs',
-    'Major'        => '7',
+    'Major'        => '8',
     'Intermediate' => '0',
     'Minor'        => '0',
   );
