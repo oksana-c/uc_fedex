@@ -593,7 +593,11 @@ function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
     '#required'      => TRUE,
   );
 
-  $services        = _uc_fedex_services();
+  $services = array_merge(
+    _uc_fedex_ground_services(),
+    _uc_fedex_express_services(),
+    _uc_fedex_freight_services()
+  );
   $default_service = '';
   $method          = $order->quote['method'];
   if ($method == 'fedex') {
@@ -622,7 +626,11 @@ function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
   $form['shipment']['service'] = array(
     '#type'          => 'select',
     '#title'         => t('FedEx service'),
-    '#options'       => _uc_fedex_services(),
+    '#options'       => array_merge(
+      _uc_fedex_ground_services(),
+      _uc_fedex_express_services(),
+      _uc_fedex_freight_services()
+    ),
     '#default_value' => $default_service,
   );
   $today = getdate();
