@@ -27,7 +27,7 @@
  * Associative array of DOM returned.
  *
  * @param $tracking_number
- *   FedEx Tracking number
+ *   FedEx Tracking number.
  *
  * @return
  *   Associative array mirroring contents of SOAP object returned from server.

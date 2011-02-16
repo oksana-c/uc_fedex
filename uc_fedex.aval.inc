@@ -27,7 +27,7 @@
  * Associative array of DOM returned.
  *
  * @param $address
- *   Object containing Ubercart address information
+ *   Object containing Ubercart address information.
  *
  * @return
  *   Associative array mirroring contents of SOAP object returned from server.
@@ -143,11 +143,12 @@ function uc_fedex_address_request($address) {
  * settings.  Otherwise, the $default input parameter is used.
  *
  * @param $address
- *   An object holding address data
+ *   An object holding address data.
  * @param $default
- *   TRUE if $address is Residential, FALSE otherwise
+ *   TRUE if $address is Residential, FALSE otherwise.
+ *
  * @return
- *   TRUE if $address is Residential, FALSE otherwise
+ *   TRUE if $address is Residential, FALSE otherwise.
  */
 function uc_fedex_address_is_residential($address, $default=TRUE) {
   // If desired, use Address API to determine whether FedEx considers
@@ -201,7 +202,7 @@ function uc_fedex_form_uc_cart_checkout_form_alter(&$form, &$form_state) {
 
 /**
  * Form validation function to validate delivery address entered into
- * uc_cart_checkout_form
+ * uc_cart_checkout_form().
  */
 function uc_fedex_address_validate($form, &$form_state) {
 

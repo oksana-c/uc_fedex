@@ -31,7 +31,7 @@
  * @param $fedex_service
  *   FedEx service code (refers to FedEx Ground, Standard Overnight, etc.).
  * @return
- *   Response object from SOAP request
+ *   Response object from SOAP request.
  */
 function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_service) {
 
@@ -275,9 +275,9 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
 /**
  * Last chance for user to review shipment.
  *
- * @ingroup forms
  * @see theme_uc_fedex_confirm_shipment()
  * @see uc_fedex_confirm_shipment_submit()
+ * @ingroup forms
  */
 function uc_fedex_confirm_shipment($order) {
   $form = array();
@@ -296,8 +296,8 @@ function uc_fedex_confirm_shipment($order) {
 /**
  * Display final shipment information for review.
  *
- * @ingroup themeable
  * @see uc_fedex_confirm_shipment()
+ * @ingroup themeable
  */
 function theme_uc_fedex_confirm_shipment($form) {
   $output = '';
@@ -479,9 +479,10 @@ function uc_fedex_label_image() {
  *   The order object for the shipment.
  * @param $package_ids
  *   Array of package ids to shipped.
- * @ingroup forms
+ *
  * @see uc_fedex_fulfill_order_validate()
  * @see uc_fedex_fulfill_order_submit()
+ * @ingroup forms
  */
 function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
   $form = array();
@@ -786,7 +787,7 @@ function uc_fedex_fulfill_order_submit($form, &$form_state) {
  * Convenience function to get FedEx codes for payor.
  *
  * @return
- *   An array of human-friendly names for available FedEx payor option codes
+ *   An array of human-friendly names for available FedEx payor option codes.
  */
 function _uc_fedex_payor_types() {
   return array(
@@ -801,7 +802,7 @@ function _uc_fedex_payor_types() {
  * Convenience function to get FedEx codes for label image format.
  *
  * @return
- *   An array of human-friendly names for available FedEx label image formats
+ *   An array of human-friendly names for available FedEx label image formats.
  */
 function _uc_fedex_label_image_types() {
   return array(
@@ -818,7 +819,7 @@ function _uc_fedex_label_image_types() {
  * Convenience function to get FedEx codes for label orientation.
  *
  * @return
- *   An array of human-friendly names for the different FedEx label orientation
+ *   An array of human-friendly names for the different FedEx label orientation.
  */
 function _uc_fedex_label_orientation_types() {
   return array(
@@ -832,7 +833,8 @@ function _uc_fedex_label_orientation_types() {
  * Convenience function to get FedEx codes for label paper stock type.
  *
  * @return
- *   An array of human-friendly names for available FedEx label paper stock types
+ *   An array of human-friendly names for available FedEx label
+ *   paper stock types.
  */
 function _uc_fedex_label_stock_types() {
   return array(
