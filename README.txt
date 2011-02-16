@@ -127,7 +127,7 @@ and *will* provide both list rates and discount rates.)
 
 To obtain your FedEx Test Credentials, first register at:
 http://www.fedex.com/us/developer/ Then navigate to:
-https://www.fedex.com/wpor/web/jsp/drclinks.jsp?links=develop.html and
+https://www.fedex.com/us/developer/wss/develop.html and
 fill in the form.  Your credentials should be presented to you immediately
 followed by the same information split into two separate e-mails.  Also
 included will be instructions for obtaining your Production credentials,
