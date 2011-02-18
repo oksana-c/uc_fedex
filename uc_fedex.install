@@ -4,7 +4,7 @@
 /**
  * @file
  * Database installation, uninstallation, and update functions for the
- * FedEx Shipping Quotes module
+ * FedEx Shipping Quotes module.
  *
  * @author Tim Rohaly.    <http://drupal.org/user/202830>
  * @version $Id$

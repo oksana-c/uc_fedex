@@ -182,9 +182,9 @@ function uc_fedex_address_is_residential($address, $default=TRUE) {
  *
  * Adds validation of delivery addresses via the FedEx Address Validation
  * Web Service.  Validation is performed in two places:
- *  1) On the checkout page, via jQuery / Ajax, when the required address
- *     fields are filled in.
- *  2) Upon submission of the checkout form.
+ *  - 1: On the checkout page, via jQuery / Ajax, when the required address
+ *    fields are filled in.
+ *  - 2: Upon submission of the checkout form.
  */
 function uc_fedex_form_uc_cart_checkout_form_alter(&$form, &$form_state) {
 
@@ -203,6 +203,8 @@ function uc_fedex_form_uc_cart_checkout_form_alter(&$form, &$form_state) {
 /**
  * Form validation function to validate delivery address entered into
  * uc_cart_checkout_form().
+ *
+ * @see uc_cart_checkout_form()
  */
 function uc_fedex_address_validate($form, &$form_state) {
 
