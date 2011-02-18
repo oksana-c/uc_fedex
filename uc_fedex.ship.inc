@@ -3,7 +3,7 @@
 
 /**
  * @file
- * FedEx Web Services Rate / Available Services Quote
+ * FedEx Web Services Rate / Available Services Quote.
  *
  * Shipping quote module that interfaces with the FedEx Web Services API
  * to get rates for small package shipments.  Implements a SOAP Web Service
@@ -30,6 +30,7 @@
  *   Delivery destination address information.
  * @param $fedex_service
  *   FedEx service code (refers to FedEx Ground, Standard Overnight, etc.).
+ *
  * @return
  *   Response object from SOAP request.
  */
@@ -294,7 +295,7 @@ function uc_fedex_confirm_shipment($order) {
 
 
 /**
- * Display final shipment information for review.
+ * Displays final shipment information for review.
  *
  * @see uc_fedex_confirm_shipment()
  * @ingroup themeable
@@ -349,7 +350,7 @@ function theme_uc_fedex_confirm_shipment($form) {
 
 
 /**
- * Generate shipping labels.
+ * Generates shipping labels.
  *
  * @see uc_fedex_confirm_shipment()
  */
@@ -447,7 +448,7 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
 
 
 /**
- * Display the shipping label for printing.
+ * Displays the shipping label for printing.
  *
  * Each argument is a component of the file path to the image.
  *
@@ -473,7 +474,7 @@ function uc_fedex_label_image() {
 /**
  * Shipment creation callback.
  *
- * Confirm shipment data before requesting a shipping label.
+ * Confirms shipment data before requesting a shipping label.
  *
  * @param $order
  *   The order object for the shipment.
@@ -663,7 +664,7 @@ function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
 
 
 /**
- * Pass final information into shipment object.
+ * Passes final information into shipment object.
  *
  * @see uc_fedex_fulfill_order()
  * @see uc_fedex_confirm_shipment()
@@ -773,7 +774,7 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
 
 
 /**
- * Pass final information into shipment object.
+ * Passes final information into shipment object.
  *
  * @see uc_fedex_fulfill_order()
  * @see uc_fedex_confirm_shipment()

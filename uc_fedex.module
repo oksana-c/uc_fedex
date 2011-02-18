@@ -1058,9 +1058,10 @@ function print_request_response($client) {
  * line-item shown to the customer.
  *
  * @param $service
- *   The FedEx service name
+ *   The FedEx service name.
  * @param $packages
- *   Package information
+ *   Package information.
+ *
  * @ingroup themeable
  */
 function theme_uc_fedex_option_label($service, $packages) {

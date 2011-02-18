@@ -3,7 +3,7 @@
 
 /**
  * @file
- * FedEx Web Services Rate / Available Services Quote
+ * FedEx Web Services Rate / Available Services Quote.
  *
  * Shipping quote module that interfaces with the FedEx Web Services API
  * to get rates for small package shipments.  Implements a SOAP Web Service
