@@ -1,12 +1,10 @@
 <?php
-// $Id$
 
 /**
  * @file
  * Install, update, and uninstall functions for the uc_fedex module.
  *
  * @author Tim Rohaly.    <http://drupal.org/user/202830>
- * @version $Id$
  */
 
 

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * @file
@@ -10,7 +9,6 @@
  * client.
  *
  * @author Tim Rohaly.    <http://drupal.org/user/202830>
- * @version $Id$
  */
 
 

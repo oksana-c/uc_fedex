@@ -1,12 +1,10 @@
 <?php
-// $Id$
 
 /**
  * @file
  * FedEx Shipping Quotes module administration menu and callbacks.
  *
  * @author Tim Rohaly.    <http://drupal.org/user/202830>
- * @version $Id$
  */
 
 

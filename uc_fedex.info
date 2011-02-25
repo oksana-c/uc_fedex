@@ -1,4 +1,3 @@
-; $Id$
 name = FedEx
 description = Integration of FedEx Web Services API with Ubercart.
 dependencies[] = uc_quote
