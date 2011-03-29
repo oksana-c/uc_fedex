@@ -753,7 +753,7 @@ function uc_fedex_weight_markup($weight) {
  *   ->weight_units Set to store default, taken from uc_weight_unit variable
  *   ->shipweight   Computed weight of package, including markup
  *
- * Store weight units are used internally for compution of package weights.
+ * Store weight units are used internally for computation of package weights.
  * Each product may have its own weight units; these are converted to store
  * units and the package shipweight is returned in terms of the store weight
  * units. The store weight units are saved in the $package object for
