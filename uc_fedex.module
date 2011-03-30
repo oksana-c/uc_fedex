@@ -92,7 +92,7 @@ function uc_fedex_init() {
  * Deletes FedEx shipping labels from the file system automatically
  * on a periodic basis.  Default period is 1 week.
  */
-function uc_fedex_cron() {
+function uc_fedex_cron_broken() {
   $path = file_create_path('fedex_labels');
   if (is_dir($path)) {
     $files = array_diff(scandir($path), array('.', '..'));
@@ -119,14 +119,14 @@ function uc_fedex_theme() {
   return array(
     'uc_fedex_option_label' => array(
       'file'      => 'uc_fedex.module',
-      'arguments' => array(
-        'product'  => NULL,
+      'variables' => array(
+        'service'  => NULL,
         'packages' => NULL,
       ),
     ),
     'uc_fedex_confirm_shipment' => array(
       'file'      => 'uc_fedex.ship.inc',
-      'arguments' => array('form' => NULL),
+      'variables' => array('form' => NULL),
     ),
   );
 }
@@ -304,7 +304,7 @@ function uc_fedex_uc_shipping_method() {
 
 
 /**
- * Implements Ubercart's hook_store_status().
+ * Implements Ubercart's hook_uc_store_status().
  *
  * Lets the administrator know if the FedEx account information has not been
  * filled out.
@@ -312,7 +312,7 @@ function uc_fedex_uc_shipping_method() {
  * @return
  *   Array of error or status messages from configuration of FedEx module.
  */
-function uc_fedex_store_status() {
+function uc_fedex_uc_store_status() {
   $messages = array();
   $key      = variable_get('uc_fedex_user_credential_key', 0);
   $password = variable_get('uc_fedex_user_credential_password', 0);
@@ -476,7 +476,7 @@ function uc_fedex_quote($products, $details, $method) {
       $quotes[$service] = array(
         'rate'         => $rate,
         'format'       => uc_currency_format($rate),
-        'option_label' => theme('uc_fedex_option_label', $method['quote']['accessorials'][$service], $packages),  // cart pane
+        'option_label' => theme('uc_fedex_option_label', array('service' => $method['quote']['accessorials'][$service], 'packages' => $packages)),  // cart pane
       );
     }
   }
@@ -1070,7 +1070,10 @@ function print_request_response($client) {
  *
  * @ingroup themeable
  */
-function theme_uc_fedex_option_label($service, $packages) {
+function theme_uc_fedex_option_label($variables) {
+  $service  = $variables['service'];
+  $packages = $variables['packages'];
+
   // Start with FedEx logo
   $output  = '<img class="fedex-logo" src="'. base_path() . drupal_get_path('module', 'uc_fedex') .'/uc_fedex_logo.gif" alt="FedEx Logo" />'
 ;
