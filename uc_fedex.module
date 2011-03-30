@@ -143,7 +143,11 @@ function uc_fedex_theme() {
  * Connect the FedEx quote Action and Event.
  */
 function uc_fedex_ca_predicate() {
-  $enabled = variable_get('uc_quote_enabled', array());
+  $enabled = variable_get('uc_quote_enabled', array() + array(
+    'fedex_ground'  => FALSE,
+    'fedex'         => FALSE,
+    'fedex_freight' => FALSE,
+  ));
 
   $predicates = array(
     'uc_fedex_get_ground_quote' => array(
@@ -206,12 +210,12 @@ function uc_fedex_ca_predicate() {
 
 
 /**
- * Implements Ubercart's hook_shipping_type().
+ * Implements Ubercart's hook_uc_shipping_type().
  *
  * @return
  *   Array of package types for FedEx shipping method.
  */
-function uc_fedex_shipping_type() {
+function uc_fedex_uc_shipping_type() {
   $weight = variable_get('uc_quote_type_weight', array('small_package' => 0));
 
   $types = array(
@@ -227,18 +231,22 @@ function uc_fedex_shipping_type() {
 
 
 /**
- * Implements Ubercart's hook_shipping_method().
+ * Implements Ubercart's hook_uc_shipping_method().
  *
  * @return
  *   Array of FedEx shipping services.
  */
-function uc_fedex_shipping_method() {
-  $enabled = variable_get('uc_quote_enabled', array());
-  $weight  = variable_get('uc_quote_method_weight', array(
+function uc_fedex_uc_shipping_method() {
+  $enabled = variable_get('uc_quote_enabled', array()) + array(
+    'fedex_ground'  => FALSE,
+    'fedex'         => FALSE,
+    'fedex_freight' => FALSE,
+  );
+  $weight  = variable_get('uc_quote_method_weight', array()) + array(
     'fedex_ground'  => 0,
     'fedex'         => 1,
     'fedex_freight' => 2,
-  ));
+  );
 
   $methods = array(
     'fedex_ground' => array(
@@ -377,9 +385,9 @@ function uc_fedex_quote($products, $details, $method) {
   }
 
   // Create and fill object with info needed about origin
-  $origin  = variable_get('uc_quote_store_default_address', new stdClass());
-  $country = db_query("SELECT * FROM {uc_countries} WHERE country_id = %d", $origin->country);
-  $country_data = db_fetch_object($country);
+  $origin  = variable_get('uc_quote_store_default_address', new UcAddress());
+  $country = db_query("SELECT * FROM {uc_countries} WHERE country_id = :id", array(':id' => $origin->country));
+  $country_data = $country->fetchObject();
   $origin->country_iso_code_2 = $country_data->country_iso_code_2;
 
   // Create and fill object with info needed about destination
@@ -388,8 +396,8 @@ function uc_fedex_quote($products, $details, $method) {
     $destination->country_iso_code_2 = $origin->country_iso_code_2;
   }
   else {
-    $country = db_query("SELECT * FROM {uc_countries} WHERE country_id = %d", $destination->country);
-    $country_data = db_fetch_object($country);
+    $country = db_query("SELECT * FROM {uc_countries} WHERE country_id = :id", array(':id' => $destination->country));
+    $country_data = $country->fetchObject();
     $destination->country_iso_code_2 = $country_data->country_iso_code_2;
   }
 

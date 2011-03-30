@@ -509,7 +509,7 @@ function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
         $product_list[]  = $product->qty .' x '. $product->model;
         $declared_value += $product->qty * $product->price;
       }
-      $fedex_data = db_fetch_array(db_query("SELECT pkg_type FROM {uc_fedex_products} WHERE nid = %d", $product->nid));
+      $fedex_data = db_fetch_array(db_query("SELECT pkg_type FROM {uc_fedex_products} WHERE nid = :id", array(':id' => $product->nid)));
       $product->fedex = $fedex_data;
       $pkg_form = array(
         '#type' => 'fieldset',
