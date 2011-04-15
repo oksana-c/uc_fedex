@@ -516,7 +516,8 @@ function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
         '#title' => t('Package !id', array('!id' => $id)),
       );
       $pkg_form['products'] = array(
-        '#value' => theme('item_list', $product_list)
+        '#type'  => 'markup',
+        '#markup' => theme('item_list', $product_list)
       );
       $pkg_form['package_id'] = array(
         '#type'  => 'hidden',
@@ -616,7 +617,7 @@ function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
   $form['shipment']['shipping_choice'] = array(
     '#type'   => 'markup',
     '#prefix' => '<div>',
-    '#value'  => t('Customer selected @method as the shipping method and paid @rate', array('@method' => $method, '@rate' => uc_currency_format($order->quote['rate']))),
+    '#markup'  => t('Customer selected @method as the shipping method and paid @rate', array('@method' => $method, '@rate' => uc_currency_format($order->quote['rate']))),
     '#suffix' => '</div>',
   );
 
