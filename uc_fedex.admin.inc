@@ -95,6 +95,21 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Select the FedEx Ground services customers are allowed to use.'),
   );
 
+  if (module_exists('rules')) {
+    $form['uc_fedex_service_selection']['uc_fedex_ground_conditions'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('FedEx Ground service conditions'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $conditions = rules_config_load('get_quote_from_fedex_ground');
+    if ($conditions) {
+      RulesPluginUI::$basePath = 'admin/config/workflow/rules/components';
+      $conditions->form($form['uc_fedex_service_selection']['uc_fedex_ground_conditions'], $form_state);
+    }
+  }
+
+
   // Form to restrict FedEx Express services available to customer
   $form['uc_fedex_service_selection']['uc_fedex_express_services'] = array(
     '#type'          => 'checkboxes',
@@ -103,6 +118,20 @@ function uc_fedex_admin_settings() {
     '#options'       => _uc_fedex_express_services(),
     '#description'   => t('Select the FedEx Express services customers are allowed to use.'),
   );
+
+  if (module_exists('rules')) {
+    $form['uc_fedex_service_selection']['uc_fedex_express_conditions'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('FedEx Express service conditions'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $conditions = rules_config_load('get_quote_from_fedex');
+    if ($conditions) {
+      RulesPluginUI::$basePath = 'admin/config/workflow/rules/components';
+      $conditions->form($form['uc_fedex_service_selection']['uc_fedex_express_conditions'], $form_state);
+    }
+  }
 
   // Form to restrict FedEx Express Freight services available to customer
   $form['uc_fedex_service_selection']['uc_fedex_freight_services'] = array(
@@ -113,6 +142,20 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Select the FedEx Express Freight services customers are allowed to use.'),
   );
 
+  if (module_exists('rules')) {
+    $form['uc_fedex_service_selection']['uc_fedex_express_freight_conditions'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('FedEx Express Freight service conditions'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $conditions = rules_config_load('get_quote_from_fedex');
+    if ($conditions) {
+      RulesPluginUI::$basePath = 'admin/config/workflow/rules/components';
+      $conditions->form($form['uc_fedex_service_selection']['uc_fedex_express_freight_conditions'], $form_state);
+    }
+  }
+
   // Form to restrict FedEx Freight services available to customer
   $form['uc_fedex_service_selection']['uc_fedex_freight'] = array(
     '#type'          => 'checkboxes',
@@ -121,6 +164,20 @@ function uc_fedex_admin_settings() {
     '#options'       => _uc_fedex_freight_services(),
     '#description'   => t('Select the FedEx Freight services customers are allowed to use.'),
   );
+
+  if (module_exists('rules')) {
+    $form['uc_fedex_service_selection']['uc_fedex_freight_conditions'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('FedEx Freight service conditions'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $conditions = rules_config_load('get_quote_from_fedex_freight');
+    if ($conditions) {
+      RulesPluginUI::$basePath = 'admin/config/workflow/rules/components';
+      $conditions->form($form['uc_fedex_service_selection']['uc_fedex_freight_conditions'], $form_state);
+    }
+  }
 
   // Form to set freight account number
   $form['uc_fedex_credentials']['uc_fedex_freight_account_number'] = array(
@@ -245,7 +302,7 @@ function uc_fedex_admin_settings() {
     '#title'         => t('Address Validation'),
     '#description'   => t('Preferences for FedEx Address Validation.  Additional permissions from FedEx are required to use this feature.'),
     '#collapsible'   => TRUE,
-    '#collapsed'     => FALSE,
+    '#collapsed'     => TRUE,
   );
 
   // Form to select Residential/Commercial destination address
@@ -283,7 +340,7 @@ function uc_fedex_admin_settings() {
     '#title'         => t('Label Printing'),
     '#description'   => t('Preferences for FedEx Shipping Label Printing.  Additional permissions from FedEx are required to use this feature.'),
     '#collapsible'   => TRUE,
-    '#collapsed'     => FALSE,
+    '#collapsed'     => TRUE,
   );
 
   // Form to select label image format
