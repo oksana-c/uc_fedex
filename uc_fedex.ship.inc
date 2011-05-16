@@ -44,9 +44,12 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
 
   // Set up SOAP call.
   // Allow tracing so details of request can be retrieved for error logging
-  $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
-              .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
-              .'/ShipService_v7.wsdl', array('trace' => 1));
+  $client = new SoapClient(
+    drupal_get_path('module', 'uc_fedex') .
+      '/wsdl-' . variable_get('uc_fedex_server_role', 'testing') .
+      '/ShipService_v7.wsdl',
+    array('trace' => 1)
+  );
 
   // FedEx user key and password filled in by user on admin form
   $request['WebAuthenticationDetail'] = array(
@@ -120,7 +123,7 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
   // Grab details of package destination
   $request['RequestedShipment']['Recipient'] = array(
     'Contact' => array(
-      'PersonName'  => $destination->first_name .' '. $destination->last_name,
+      'PersonName'  => $destination->first_name . ' ' . $destination->last_name,
       'CompanyName' => $destination->company,
       'PhoneNumber' => $destination->phone,
     ),
@@ -255,7 +258,7 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
         drupal_set_message(t('Error in processing FedEx Shipping Request.'), 'error');
         foreach ($response[$sequence]->Notifications as $notification) {
           if (is_array($response[$sequence]->Notifications)) {
-            drupal_set_message($notification->Severity .': '. $notification->Message, 'error');
+            drupal_set_message($notification->Severity . ': ' . $notification->Message, 'error');
           }
           else {
             drupal_set_message($notification, 'error');
@@ -264,7 +267,7 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
       }
     }
     catch (SoapFault $exception) {
-      drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>'. $exception->faultcode .'<br /><b>String:</b>'. $exception->faultstring .'<br />', 'error');
+      drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>' . $exception->faultcode . '<br /><b>String:</b>' . $exception->faultstring . '<br />', 'error');
     }
   }
   return $response;
@@ -301,7 +304,7 @@ function uc_fedex_confirm_shipment($order) {
 function theme_uc_fedex_confirm_shipment($form) {
   $output = '';
 
-  $output .= '<div class="shipping-address"><b>'. t('Ship from:') .'</b><br />';
+  $output .= '<div class="shipping-address"><b>' . t('Ship from:') . '</b><br />';
   $output .= uc_address_format(
     check_plain($_SESSION['fedex']['origin']->first_name),
     check_plain($_SESSION['fedex']['origin']->last_name),
@@ -313,10 +316,10 @@ function theme_uc_fedex_confirm_shipment($form) {
     check_plain($_SESSION['fedex']['origin']->postal_code),
     check_plain($_SESSION['fedex']['origin']->country)
   );
-  $output .= '<br />'. check_plain($_SESSION['fedex']['origin']->email);
+  $output .= '<br />' . check_plain($_SESSION['fedex']['origin']->email);
   $output .= '</div>';
 
-  $output .= '<div class="shipping-address"><b>'. t('Ship to:') .'</b><br />';
+  $output .= '<div class="shipping-address"><b>' . t('Ship to:') . '</b><br />';
   $output .= uc_address_format(
     check_plain($_SESSION['fedex']['destination']->first_name),
     check_plain($_SESSION['fedex']['destination']->last_name),
@@ -328,18 +331,18 @@ function theme_uc_fedex_confirm_shipment($form) {
     check_plain($_SESSION['fedex']['destination']->postal_code),
     check_plain($_SESSION['fedex']['destination']->country)
   );
-  $output .= '<br />'. check_plain($_SESSION['fedex']['destination']->email);
+  $output .= '<br />' . check_plain($_SESSION['fedex']['destination']->email);
   $output .= '</div>';
   $output .= '<div class="shipment-data">';
   $method = uc_fedex_shipping_method();
-  $output .= '<b>'. $method['fedex']['quote']['accessorials'][$_SESSION['fedex']['service']] .'</b><br />';
+  $output .= '<b>' . $method['fedex']['quote']['accessorials'][$_SESSION['fedex']['service']] . '</b><br />';
   $context = array(
     'revision' => 'themed',
     'type'     => 'amount',
   );
-  $output .= '<i>'. check_plain($_SESSION['fedex']['rate']['type']) .'</i>: '. uc_price($_SESSION['fedex']['rate']['amount'], $context) .' ('. check_plain($_SESSION['fedex']['rate']['currency']) .')<br />';
+  $output .= '<i>' . check_plain($_SESSION['fedex']['rate']['type']) . '</i>: ' . uc_price($_SESSION['fedex']['rate']['amount'], $context) . ' (' . check_plain($_SESSION['fedex']['rate']['currency']) . ')<br />';
   $ship_date = $_SESSION['fedex']['ship_date'];
-  $output .= 'Ship date: '. format_date(gmmktime(12, 0, 0, $ship_date['month'], $ship_date['day'], $ship_date['year']), 'custom', variable_get('uc_date_format_default', 'm/d/Y'));
+  $output .= 'Ship date: ' . format_date(gmmktime(12, 0, 0, $ship_date['month'], $ship_date['day'], $ship_date['year']), 'custom', variable_get('uc_date_format_default', 'm/d/Y'));
   $output .= "</div>\n<br style=\"clear: both;\" />";
   $output .= drupal_render($form);
 
@@ -421,7 +424,7 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
     $package =& current($shipment->packages);
     $package->tracking_number = (string) $package_results->CompletedShipmentDetail->CompletedPackageDetails->TrackingIds->TrackingNumber;
     if (file_check_directory(file_create_path('fedex_labels'), FILE_CREATE_DIRECTORY)) {
-      $label_path = file_create_path('fedex_labels') .'/label'. $package->tracking_number .'.'. strtolower(variable_get('uc_fedex_label_image_format', 'PDF'));
+      $label_path = file_create_path('fedex_labels') . '/label' . $package->tracking_number . '.' . strtolower(variable_get('uc_fedex_label_image_format', 'PDF'));
       if ($label_file = fopen($label_path, 'wb')) {
         fwrite($label_file, $package_results->CompletedShipmentDetail->CompletedPackageDetails->Label->Parts->Image);
         fclose($label_file);
@@ -441,7 +444,7 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
   uc_shipping_shipment_save($shipment);
 
   unset($_SESSION['fedex']);
-  $form_state['redirect'] = 'admin/store/orders/'. $order_id .'/shipments';
+  $form_state['redirect'] = 'admin/store/orders/' . $order_id . '/shipments';
 }
 
 
@@ -506,7 +509,7 @@ function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
       $product_list = array();
       $declared_value = 0;
       foreach ($package->products as $product) {
-        $product_list[]  = $product->qty .' x '. $product->model;
+        $product_list[]  = $product->qty . ' x ' . $product->model;
         $declared_value += $product->qty * $product->price;
       }
       $fedex_data = db_fetch_array(db_query("SELECT pkg_type FROM {uc_fedex_products} WHERE nid = :id", array(':id' => $product->nid)));

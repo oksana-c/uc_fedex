@@ -32,13 +32,16 @@
  */
 function uc_fedex_address_request($address) {
 
-  //drupal_set_message('<pre>'. var_export($address, TRUE) .'</pre>');
+  //drupal_set_message('<pre>' . var_export($address, TRUE) . '</pre>');
 
   // Set up SOAP call.
   // Allow tracing so details of request can be retrieved for error logging
-  $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
-              .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
-              .'/AddressValidationService_v2.wsdl', array('trace' => 1));
+  $client = new SoapClient(
+    drupal_get_path('module', 'uc_fedex') . 
+      '/wsdl-' . variable_get('uc_fedex_server_role', 'testing') .
+      '/AddressValidationService_v2.wsdl',
+    array('trace' => 1)
+  );
 
   // FedEx user key and password filled in by user on admin form
   $request['WebAuthenticationDetail'] = array(
@@ -93,7 +96,7 @@ function uc_fedex_address_request($address) {
   // Get address
 // CompanyName needs to be unset if empty
   $request['AddressesToValidate'][] = array(
-    'AddressId'   => $address->last_name .', '. $address->first_name,
+    'AddressId'   => $address->last_name . ', ' . $address->first_name,
 //  'CompanyName' => $address->company,
     'Address'     => array(
       'StreetLines'         => $street_lines,
@@ -118,7 +121,7 @@ function uc_fedex_address_request($address) {
       drupal_set_message(t('Error in processing FedEx Address Validation.'), 'error');
       foreach ($response->Notifications as $notification) {
         if (is_array($response->Notifications)) {
-          drupal_set_message($notification->Severity .': '.
+          drupal_set_message($notification->Severity . ': ' .
                              $notification->Message, 'error');
         }
         else {
@@ -129,7 +132,7 @@ function uc_fedex_address_request($address) {
     return $response;
   }
   catch (SoapFault $exception) {
-    drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>'. $exception->faultcode .'<br /><b>String:</b>'. $exception->faultstring .'<br />', 'error');
+    drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>' . $exception->faultcode . '<br /><b>String:</b>' . $exception->faultstring . '<br />', 'error');
   }
 }
 
@@ -148,7 +151,7 @@ function uc_fedex_address_request($address) {
  * @return
  *   TRUE if $address is Residential, FALSE otherwise.
  */
-function uc_fedex_address_is_residential($address, $default=TRUE) {
+function uc_fedex_address_is_residential($address, $default = TRUE) {
   // If desired, use Address API to determine whether FedEx considers
   // the address to be Residential or Commercial
   if (variable_get('uc_fedex_address_validation', FALSE)) {
@@ -176,7 +179,7 @@ function uc_fedex_address_is_residential($address, $default=TRUE) {
 
 
 /**
- * Implementation of hook_form_[form_id]_alter().
+ * Implements hook_form_[form_id]_alter().
  *
  * Adds validation of delivery addresses via the FedEx Address Validation
  * Web Service.  Validation is performed in two places:
@@ -220,13 +223,13 @@ drupal_set_message('<pre>address to validate: '. var_export($address, TRUE) .'</
   $response = uc_fedex_address_request($address);
   $address_details = $response->AddressResults->ProposedAddressDetails;
 
-drupal_set_message('<pre>proposed address after validation: '. var_export($address_details->Address, TRUE) .'</pre>');
+drupal_set_message('<pre>proposed address after validation: ' . var_export($address_details->Address, TRUE) . '</pre>');
 
-drupal_set_message('<pre>response: '. var_export($address_details->Address->StreetLines, TRUE) .'</pre>');
+drupal_set_message('<pre>response: ' . var_export($address_details->Address->StreetLines, TRUE) . '</pre>');
 
-drupal_set_message('<pre>response: '. var_export($form['panes']['delivery']['delivery_street1'], TRUE) .'</pre>');
+drupal_set_message('<pre>response: ' . var_export($form['panes']['delivery']['delivery_street1'], TRUE) . '</pre>');
 
-  $form_state['values']['panes']['delivery']['delivery_street1'] = "HELLO";
+  $form_state['values']['panes']['delivery']['delivery_street1'] = 'HELLO';
 
   // If Address Validation succeedes, rewrite address in canonical form
   form_set_value($form['panes']['delivery']['delivery_street1'],
