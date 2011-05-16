@@ -292,9 +292,7 @@ function uc_fedex_quote($products, $details, $method) {
   // filled out the destination address, so check to see whether the address
   // is complete. If not, abort.
   $destination = (object) $details;
-  if (empty($destination->street1)     ||
-      empty($destination->city)        ||
-      empty($destination->zone)        ||
+  if (empty($destination->zone)        ||
       empty($destination->postal_code) ||
       empty($destination->country)       ) {
     // Skip this shipping method.
@@ -329,9 +327,12 @@ function uc_fedex_quote($products, $details, $method) {
     $destination->country_iso_code_2 = $country_data->country_iso_code_2;
   }
 
+  $debug = user_access('configure quotes') &&
+           variable_get('uc_quote_display_debug', FALSE);
+
   // Determine if address is Residential or Commercial
   // If Address Validation API is not used or fails, default to store default
-  $destination->residential = uc_fedex_address_is_residential($destination, variable_get('uc_fedex_residential_quotes', 1));
+  $destination->residential = uc_fedex_address_is_residential($destination, variable_get('uc_fedex_residential_quotes', 1), $debug);
 
   // Call the method that does the actual SOAP request to the FedEx Server
   // Response contains all available services and rates
@@ -408,7 +409,7 @@ function uc_fedex_quote($products, $details, $method) {
       );
     }
   }
-  if (user_access('configure quotes') && variable_get('uc_quote_display_debug', FALSE)) {
+  if ($debug) {
 //  $quotes['data']['debug'] = htmlentities($response).'<br />';
   }
 

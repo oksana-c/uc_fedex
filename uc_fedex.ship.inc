@@ -693,7 +693,7 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
 
   // Determine if address is Residential or Commercial
   // If Address Validation API is not used or fails, default to form choice
-  $destination->residential = uc_fedex_address_is_residential($destination, $destination->residential);
+  $destination->residential = uc_fedex_address_is_residential($destination, $destination->residential, FALSE);
 
   $_SESSION['fedex']['destination'] = $destination;
   foreach ($form_state['values']['packages'] as $id => $pkg_form) {

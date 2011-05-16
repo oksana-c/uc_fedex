@@ -147,28 +147,46 @@ function uc_fedex_address_request($address) {
  *   An object holding address data.
  * @param $default
  *   TRUE if $address is Residential, FALSE otherwise.
+ * @param $verbose
+ *   If TRUE, display result of address determination in a Drupal message.
  *
  * @return
  *   TRUE if $address is Residential, FALSE otherwise.
  */
-function uc_fedex_address_is_residential($address, $default = TRUE) {
+function uc_fedex_address_is_residential($address, $default = TRUE, $verbose = FALSE) {
   // If desired, use Address API to determine whether FedEx considers
   // the address to be Residential or Commercial
   if (variable_get('uc_fedex_address_validation', FALSE)) {
+    // Ensure we have the information needed to validate the address
+    if (empty($address->street1)     ||
+        empty($address->city)        ||
+        empty($address->zone)        ||
+        empty($address->postal_code) ||
+        empty($address->country)       ) {
+      return $default; 
+    }
+    // Make request to FedEx web service
     $response = uc_fedex_address_request($address);
     $residential_status = $response->AddressResults->ProposedAddressDetails->ResidentialStatus;
+
     switch ($residential_status) {
       case 'RESIDENTIAL':
-        //drupal_set_message('FedEx classifies this address as RESIDENTIAL');
+        if ($verbose) {
+          drupal_set_message(t('FedEx classifies this address as RESIDENTIAL'));
+        }
         return TRUE;
         break;
       case 'BUSINESS':
-        //drupal_set_message('FedEx classifies this address as COMMERCIAL');
+        if ($verbose) {
+          drupal_set_message(t('FedEx classifies this address as COMMERCIAL'));
+        }
         return FALSE;
         break;
       default;
-        //drupal_set_message("FedEx can't determine the address type");
         // Any other result, fall through to use the store default
+        if ($verbose) {
+          drupal_set_message(t("FedEx can't determine the address type"));
+        }
         break;
     }
   }
