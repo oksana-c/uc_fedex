@@ -70,22 +70,12 @@ function uc_fedex_schema() {
 
 
 /**
- * Implements hook_install().
- */
-function uc_fedex_install() {
-  drupal_install_schema('uc_fedex');
-}
-
-
-/**
  * Implements hook_uninstall().
  *
  * Removes all tables and variables inserted into the
  * database by this module.
  */
 function uc_fedex_uninstall() {
-
-  drupal_uninstall_schema('uc_fedex');
 
   // Remove all module variables from the database
   variable_del('uc_fedex_user_credential_key');
@@ -121,7 +111,7 @@ function uc_fedex_uninstall() {
 
 
 /**
- * Implements hook_update().
+ * Implements hook_update_N().
  */
 function uc_fedex_update_6200() {
   $ret = array();
@@ -133,7 +123,7 @@ function uc_fedex_update_6200() {
 
 
 /**
- * Implements hook_update().
+ * Implements hook_update_N().
  *
  * Refactor uc_fedex shipping method into three separate methods:
  * Ground, Express, and Freight.  Ensure that service selections
