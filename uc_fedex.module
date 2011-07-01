@@ -992,10 +992,11 @@ function print_request_response($client) {
  * Theme function to format the FedEx service name and rate amount
  * line-item shown to the customer.
  *
- * @param $service
- *   The FedEx service name.
- * @param $packages
- *   Package information.
+ * @param $variables
+ *   Associative array containing information needed to theme a quote.
+ *   Contains two keys:
+ *   - service: The FedEx service name.
+ *   - packages: Package information.
  *
  * @ingroup themeable
  */
