@@ -31,7 +31,7 @@ function uc_fedex_admin_settings() {
     '#title'         => t('Credentials'),
     '#description'   => t('Account number and authorization information.'),
     '#collapsible'   => TRUE,
-    '#collapsed'     => FALSE,
+    '#collapsed'     => TRUE,
   );
 
   // Form to set the developer key
@@ -83,7 +83,7 @@ function uc_fedex_admin_settings() {
     '#type'          => 'fieldset',
     '#title'         => t('Service Options'),
     '#collapsible'   => TRUE,
-    '#collapsed'     => FALSE,
+    '#collapsed'     => TRUE,
   );
 
   // Form to restrict FedEx Ground services available to customer
@@ -193,7 +193,7 @@ function uc_fedex_admin_settings() {
     '#title'         => t('Quote Options'),
     '#description'   => t('Preferences that affect computation of quote.'),
     '#collapsible'   => TRUE,
-    '#collapsed'     => FALSE,
+    '#collapsed'     => TRUE,
   );
 
   // Form to set choose between LIST quotes and ACCOUNT quotes
@@ -253,7 +253,7 @@ function uc_fedex_admin_settings() {
     '#title'         => t('Markups'),
     '#description'   => t('Modifiers to the shipping weight and quoted rate.'),
     '#collapsible'   => TRUE,
-    '#collapsed'     => FALSE,
+    '#collapsed'     => TRUE,
   );
 
   // Form to select type of rate markup
