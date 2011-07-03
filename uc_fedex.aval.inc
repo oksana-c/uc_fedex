@@ -37,7 +37,7 @@ function uc_fedex_address_request($address) {
   // Set up SOAP call.
   // Allow tracing so details of request can be retrieved for error logging
   $client = new SoapClient(
-    drupal_get_path('module', 'uc_fedex') . 
+    drupal_get_path('module', 'uc_fedex') .
       '/wsdl-' . variable_get('uc_fedex_server_role', 'testing') .
       '/AddressValidationService_v2.wsdl',
     array('trace' => 1)
@@ -163,7 +163,7 @@ function uc_fedex_address_is_residential($address, $default = TRUE, $verbose = F
         empty($address->zone)        ||
         empty($address->postal_code) ||
         empty($address->country)       ) {
-      return $default; 
+      return $default;
     }
     // Make request to FedEx web service
     $response = uc_fedex_address_request($address);
@@ -235,7 +235,7 @@ function uc_fedex_address_validate($form, &$form_state) {
     }
   }
 
-drupal_set_message('<pre>address to validate: '. var_export($address, TRUE) .'</pre>');
+drupal_set_message('<pre>address to validate: ' . var_export($address, TRUE) . '</pre>');
 
   // Call FedEx Address Validation Web Service
   $response = uc_fedex_address_request($address);

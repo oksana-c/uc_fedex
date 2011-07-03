@@ -76,7 +76,7 @@ function uc_fedex_menu() {
  * Ubercart-recommended place for adding shipping quotes CSS.
  */
 function uc_fedex_init() {
-  drupal_add_css(drupal_get_path('module', 'uc_fedex') .'/uc_fedex.css');
+  drupal_add_css(drupal_get_path('module', 'uc_fedex') . '/uc_fedex.css');
 
 // Can we conditionally load based on
 // variable_get('uc_fedex_address_validation', FALSE) ?
@@ -101,8 +101,8 @@ function uc_fedex_cron_broken() {
       // and test creation date against 'uc_fedex_label_lifetime'
       $cutoff = time() - variable_get('uc_fedex_label_lifetime', 604800);
       foreach ($files as $file) {
-        if ($cutoff > filectime($path .'/'. $file)) {
-          unlink($path .'/'. $file);
+        if ($cutoff > filectime($path . '/' . $file)) {
+          unlink($path . '/' . $file);
         }
       }
     }
@@ -443,8 +443,8 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   // Set up SOAP call.
   // Allow tracing so details of request can be retrieved for error logging
   $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
-              .'/wsdl-'. variable_get('uc_fedex_server_role', 'testing')
-              .'/RateService_v8.wsdl', array('trace' => 1));
+              . '/wsdl-' . variable_get('uc_fedex_server_role', 'testing')
+              . '/RateService_v8.wsdl', array('trace' => 1));
 
   // FedEx user key and password filled in by user on admin form
   $request['WebAuthenticationDetail'] = array(
@@ -599,7 +599,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
       drupal_set_message(t('Error in processing FedEx Shipping Quote transaction.'), 'error');
       foreach ($response->Notifications as $notification) {
         if (is_array($response->Notifications)) {
-          drupal_set_message($notification->Severity .': '.
+          drupal_set_message($notification->Severity . ': ' .
                              $notification->Message, 'error');
         }
         else {
@@ -610,7 +610,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     return $response;
   }
   catch (SoapFault $exception) {
-    drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>'. $exception->faultcode .'<br /><b>String:</b>'. $exception->faultstring .'<br />', 'error');
+    drupal_set_message('<h2>Fault</h2><br /><b>Code:</b>' . $exception->faultcode . '<br /><b>String:</b>' . $exception->faultstring . '<br />', 'error');
     // what else needs to be done here if FedEx quote fails?  What to display
     // to customer?
   }
@@ -684,11 +684,11 @@ function uc_fedex_weight_markup($weight) {
  * corrected for any weight markup imposed by the administrator.
  *
  * $package object returned from this routine contains the following members:
- *   ->quantity     Number of items in package
- *   ->price        Value (sales price, in store currency) of items in package
- *   ->weight       Actual weight of items in package, in store weight units
- *   ->weight_units Set to store default, taken from uc_weight_unit variable
- *   ->shipweight   Computed weight of package, including markup
+ *   ->quantity     Number of items in package.
+ *   ->price        Value (sales price, in store currency) of items in package.
+ *   ->weight       Actual weight of items in package, in store weight units.
+ *   ->weight_units Set to store default, taken from uc_weight_unit variable.
+ *   ->shipweight   Computed weight of package, including markup.
  *
  * Store weight units are used internally for computation of package weights.
  * Each product may have its own weight units; these are converted to store
@@ -750,7 +750,7 @@ function _uc_fedex_package_products($products) {
       }
 
       // Loop over qty of each product
-      for ($item=0; $item<$product->qty; $item++) {
+      for ($item = 0; $item < $product->qty; $item++) {
         // Test to see if putting this item into the current package put us
         // over the weight limit
         if (($package->weight + $item_weight) < $products_max_weight) {
@@ -943,7 +943,7 @@ function _uc_fedex_shipment_special_types() {
     'SATURDAY_DELIVERY'     => t('Saturday Delivery'),
     'SATURDAY_PICKUP'       => t('Saturday Pickup'),
     'THIRD_PARTY_CONSIGNEE' => t('FedEx International First'),
-    'WEEKDAY_DELIVERY'      => t('Weekday delivery '),
+    'WEEKDAY_DELIVERY'      => t('Weekday delivery'),
   );
 }
 
@@ -979,11 +979,11 @@ function _uc_fedex_dropoff_types() {
 function print_request_response($client) {
   if (user_access('configure quotes') &&
       variable_get('uc_quote_display_debug', FALSE)) {
-    drupal_set_message('<h2>FedEx Transaction processed successfully.</h2>'.
-                       '<h3>Request: </h3><pre>'.
-                       check_plain($client->__getLastRequest())  .'</pre>'.
-                       '<h3>Response: </h3><pre>'.
-                       check_plain($client->__getLastResponse()) .'</pre>');
+    drupal_set_message('<h2>FedEx Transaction processed successfully.</h2>' .
+                       '<h3>Request: </h3><pre>' .
+                       check_plain($client->__getLastRequest())  . '</pre>' .
+                       '<h3>Response: </h3><pre>' .
+                       check_plain($client->__getLastResponse()) . '</pre>');
   }
 }
 
@@ -1005,7 +1005,7 @@ function theme_uc_fedex_option_label($variables) {
   $packages = $variables['packages'];
 
   // Start with FedEx logo
-  $output  = '<img class="fedex-logo" src="'. base_path() . drupal_get_path('module', 'uc_fedex') .'/uc_fedex_logo.gif" alt="FedEx Logo" />'
+  $output  = '<img class="fedex-logo" src="' . base_path() . drupal_get_path('module', 'uc_fedex') . '/uc_fedex_logo.gif" alt="FedEx Logo" />'
 ;
 
   // Add FedEx service name, removing the first six characters

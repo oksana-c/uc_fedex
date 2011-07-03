@@ -782,7 +782,7 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
  * @see uc_fedex_confirm_shipment()
  */
 function uc_fedex_fulfill_order_submit($form, &$form_state) {
-  $form_state['redirect'] = 'admin/store/orders/'. $form_state['values']['order_id'] .'/shipments/fedex';
+  $form_state['redirect'] = 'admin/store/orders/' . $form_state['values']['order_id'] . '/shipments/fedex';
 }
 
 
