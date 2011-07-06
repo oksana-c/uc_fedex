@@ -69,14 +69,8 @@ function uc_fedex_menu() {
 
 /**
  * Implements hook_init().
- *
- * Used to load module includes and CSS.  This is the wrong place to
- * add CSS because the CSS will be included on every page, not just on
- * the pages where it is needed.  However, this is currently the
- * Ubercart-recommended place for adding shipping quotes CSS.
  */
 function uc_fedex_init() {
-  drupal_add_css(drupal_get_path('module', 'uc_fedex') . '/uc_fedex.css');
 
 // Can we conditionally load based on
 // variable_get('uc_fedex_address_validation', FALSE) ?
