@@ -335,7 +335,12 @@ function theme_uc_fedex_confirm_shipment($form) {
   $output .= '</div>';
   $output .= '<div class="shipment-data">';
   $method = uc_fedex_shipping_method();
-  $output .= '<b>' . $method['fedex']['quote']['accessorials'][$_SESSION['fedex']['service']] . '</b><br />';
+  $accessorials = array_merge(
+    $method['fedex']['quote']['accessorials'],
+    $method['fedex_ground']['quote']['accessorials'],
+    $method['fedex_freight']['quote']['accessorials']
+  );
+  $output .= '<b>' . $accessorials[$_SESSION['fedex']['service']] . '</b><br />';
   $context = array(
     'revision' => 'themed',
     'type'     => 'amount',
