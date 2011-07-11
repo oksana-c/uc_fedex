@@ -245,12 +245,12 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
     try {
       $response[$sequence] = $client->processShipment($request);
 
-      if ($response->HighestSeverity != 'FAILURE' &&
-          $response->HighestSeverity != 'ERROR')     {
+      if ($response[$sequence]->HighestSeverity != 'FAILURE' &&
+          $response[$sequence]->HighestSeverity != 'ERROR')     {
         print_request_response($client);
 
         // Save master tracking # to use for remaining package in shipment
-        if ($sequence == 1) {
+        if ($sequence == 1 && count($packages) > 1) {
           $master_tracking_id = $response[$sequence]->CompletedShipmentDetail->MasterTrackingId;
         }
       }
@@ -283,10 +283,6 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
  */
 function uc_fedex_confirm_shipment($order) {
   $form = array();
-  $form['digest'] = array(
-    '#type'  => 'hidden',
-    '#value' => $_SESSION['fedex']['digest']
-  );
   $form['submit'] = array(
     '#type'  => 'submit',
     '#value' => t('Generate Label')
