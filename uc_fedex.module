@@ -119,8 +119,8 @@ function uc_fedex_theme() {
       ),
     ),
     'uc_fedex_confirm_shipment' => array(
-      'file'      => 'uc_fedex.ship.inc',
-      'variables' => array('form' => NULL),
+      'render element' => 'form',
+      'file'           => 'uc_fedex.ship.inc',
     ),
   );
 }

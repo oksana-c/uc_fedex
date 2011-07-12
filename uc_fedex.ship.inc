@@ -281,8 +281,7 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
  * @see uc_fedex_confirm_shipment_submit()
  * @ingroup forms
  */
-function uc_fedex_confirm_shipment($order) {
-  $form = array();
+function uc_fedex_confirm_shipment($form, &$form_state, $order) {
   $form['submit'] = array(
     '#type'  => 'submit',
     '#value' => t('Generate Label')
@@ -297,7 +296,9 @@ function uc_fedex_confirm_shipment($order) {
  * @see uc_fedex_confirm_shipment()
  * @ingroup themeable
  */
-function theme_uc_fedex_confirm_shipment($form) {
+function theme_uc_fedex_confirm_shipment($variables) {
+  $form = $variables['form'];
+
   $output = '';
 
   $output .= '<div class="shipping-address"><b>' . t('Ship from:') . '</b><br />';
@@ -330,22 +331,18 @@ function theme_uc_fedex_confirm_shipment($form) {
   $output .= '<br />' . check_plain($_SESSION['fedex']['destination']->email);
   $output .= '</div>';
   $output .= '<div class="shipment-data">';
-  $method = uc_fedex_shipping_method();
+  $method = uc_fedex_uc_shipping_method();
   $accessorials = array_merge(
     $method['fedex']['quote']['accessorials'],
     $method['fedex_ground']['quote']['accessorials'],
     $method['fedex_freight']['quote']['accessorials']
   );
   $output .= '<b>' . $accessorials[$_SESSION['fedex']['service']] . '</b><br />';
-  $context = array(
-    'revision' => 'themed',
-    'type'     => 'amount',
-  );
-  $output .= '<i>' . check_plain($_SESSION['fedex']['rate']['type']) . '</i>: ' . uc_price($_SESSION['fedex']['rate']['amount'], $context) . ' (' . check_plain($_SESSION['fedex']['rate']['currency']) . ')<br />';
+  $output .= '<i>' . check_plain($_SESSION['fedex']['rate']['type']) . '</i>: ' . uc_currency_format($_SESSION['fedex']['rate']['amount']) . ' (' . check_plain($_SESSION['fedex']['rate']['currency']) . ')<br />';
   $ship_date = $_SESSION['fedex']['ship_date'];
   $output .= 'Ship date: ' . format_date(gmmktime(12, 0, 0, $ship_date['month'], $ship_date['day'], $ship_date['year']), 'custom', variable_get('uc_date_format_default', 'm/d/Y'));
   $output .= "</div>\n<br style=\"clear: both;\" />";
-  $output .= drupal_render($form);
+  $output .= drupal_render_children($form);
 
   return $output;
 }
@@ -374,9 +371,14 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
   foreach ($mp_response as $response) {
     // Package tracking numbers
     $tracking[]     = $response->CompletedShipmentDetail->CompletedPackageDetails->TrackingIds->TrackingNumber;
-    $exp_delivery[] = date_parse($response->CompletedShipmentDetail->RoutingDetail->DeliveryDate);
-    // Ground and Home Delivery don't have DeliveryDate,
-    // they have TransitTime instead
+    if (isset($response->CompletedShipmentDetail->RoutingDetail->DeliveryDate)) {
+      $exp_delivery[] = date_parse($response->CompletedShipmentDetail->RoutingDetail->DeliveryDate);
+    }
+    else {
+      $exp_delivery[] = array('month' => 0, 'day' => 0, 'year' => 0);
+      // Ground and Home Delivery don't have DeliveryDate,
+      // they have TransitTime instead
+    }
   }
 
   // Final package in shipment contains summary information
@@ -403,8 +405,8 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
   // Build $shipment object to return to uc_shipment
   $shipment = new stdClass();
   $shipment->order_id        = $order_id;
-  $shipment->origin          = drupal_clone($_SESSION['fedex']['origin']);
-  $shipment->destination     = drupal_clone($_SESSION['fedex']['destination']);
+  $shipment->origin          = clone($_SESSION['fedex']['origin']);
+  $shipment->destination     = clone($_SESSION['fedex']['destination']);
   $shipment->packages        = $_SESSION['fedex']['packages'];
   $shipment->shipping_method = 'fedex';
   $shipment->accessorials    = $_SESSION['fedex']['service'];
@@ -424,19 +426,22 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
   foreach ($mp_response as $package_results) {
     $package =& current($shipment->packages);
     $package->tracking_number = (string) $package_results->CompletedShipmentDetail->CompletedPackageDetails->TrackingIds->TrackingNumber;
-    if (file_check_directory(file_create_path('fedex_labels'), FILE_CREATE_DIRECTORY)) {
-      $label_path = file_create_path('fedex_labels') . '/label' . $package->tracking_number . '.' . strtolower(variable_get('uc_fedex_label_image_format', 'PDF'));
-      if ($label_file = fopen($label_path, 'wb')) {
-        fwrite($label_file, $package_results->CompletedShipmentDetail->CompletedPackageDetails->Label->Parts->Image);
-        fclose($label_file);
-        $package->label_image = $label_path;
+
+    $label_image = $package_results->CompletedShipmentDetail->CompletedPackageDetails->Label->Parts->Image;
+    // Save the label
+    $directory = 'public://fedex_labels';
+    if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
+      $label_path = $directory . '/label' . $package->tracking_number . '.' . strtolower(variable_get('uc_fedex_label_image_format', 'PDF'));
+      if ($label_file = file_save_data($label_image, $label_path, FILE_EXISTS_REPLACE)) {
+        file_usage_add($label_file, 'uc_shipping', 'package', $package->package_id);
+        $package->label_image = $label_file;
       }
       else {
         drupal_set_message(t('Could not open a file to save the label image.'), 'error');
       }
     }
     else {
-      drupal_set_message(t('Could not find or create the directory "fedex_labels" in the file system path.'), 'error');
+      drupal_set_message(t('Could not find or create the directory %directory in the file system path.', array('%directory' => $directory)), 'error');
     }
     unset($package);
     next($shipment->packages);
@@ -457,8 +462,16 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
  * @ingroup themeable
  */
 function uc_fedex_label_image() {
-  $args = func_get_args();
-  $image_path = implode('/', $args);
+//  $args = func_get_args();
+//  $image_path = implode('/', $args);
+
+  $args = explode('/', $_GET['q'], 7);
+  if (count($args) != 7) {
+    return MENU_NOT_FOUND;
+  }
+
+  $image_path = file_stream_wrapper_uri_normalize($args[6]);
+
 
   drupal_goto($image_path);
 
@@ -487,7 +500,7 @@ function uc_fedex_label_image() {
  * @see uc_fedex_fulfill_order_submit()
  * @ingroup forms
  */
-function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
+function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
   $form = array();
   $pkg_types = _uc_fedex_package_types();
   $form['order_id'] = array('#type' => 'value', '#value' => $order->order_id);
@@ -513,15 +526,15 @@ function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
         $product_list[]  = $product->qty . ' x ' . $product->model;
         $declared_value += $product->qty * $product->price;
       }
-      $fedex_data = db_fetch_array(db_query("SELECT pkg_type FROM {uc_fedex_products} WHERE nid = :id", array(':id' => $product->nid)));
+      $fedex_data = db_query("SELECT pkg_type FROM {uc_fedex_products} WHERE nid = :nid", array(':nid' => $product->nid))->fetchAssoc();
       $product->fedex = $fedex_data;
       $pkg_form = array(
-        '#type' => 'fieldset',
+        '#type'  => 'fieldset',
         '#title' => t('Package !id', array('!id' => $id)),
       );
       $pkg_form['products'] = array(
-        '#type'  => 'markup',
-        '#markup' => theme('item_list', $product_list)
+        '#theme' => 'item_list',
+        '#items' => $product_list,
       );
       $pkg_form['package_id'] = array(
         '#type'  => 'hidden',
@@ -579,7 +592,7 @@ function uc_fedex_fulfill_order($form_state, $order, $package_ids) {
     }
   }
 
-  $form = array_merge($form, uc_shipping_address_form($form_state, $addresses, $order));
+  $form = array_merge($form, uc_shipping_address_form($form, $form_state, $addresses, $order));
 
   // Mark fields needed by the FedEx API as 'required'
   foreach (array('delivery_email', 'delivery_last_name', 'delivery_phone', 'delivery_street1', 'delivery_city', 'delivery_zone', 'delivery_country', 'delivery_postal_code') as $field) {
@@ -687,6 +700,23 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
       $destination->$field = $value;
     }
   }
+
+  // This is a total hack to work around changes made in the return value
+  // from uc_shipping_address_form().  That function needs to be fixed, but
+  // until then this should do the trick.
+  $origin        = $form_state['values']['pickup_address'];
+  $origin->phone = $form_state['values']['phone'];
+  $origin->first_name = $form_state['values']['first_name'];
+  $origin->last_name = $form_state['values']['last_name'];
+  $origin->company = $form_state['values']['company'];
+  $origin->street1 = $form_state['values']['street1'];
+  $origin->street2 = $form_state['values']['street2'];
+  $origin->city = $form_state['values']['city'];
+  $origin->zone = $form_state['values']['zone'];
+  $origin->country = $form_state['values']['country'];
+  $origin->postal_code = $form_state['values']['postal_code'];
+  $origin->email = $form_state['values']['pickup_email'];
+
   // Populate $_SESSION variable with information we'll need
   // later to generate the label
   $_SESSION['fedex']           = array();
