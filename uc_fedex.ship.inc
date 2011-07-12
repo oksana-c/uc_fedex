@@ -462,16 +462,12 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
  * @ingroup themeable
  */
 function uc_fedex_label_image() {
-//  $args = func_get_args();
-//  $image_path = implode('/', $args);
-
   $args = explode('/', $_GET['q'], 7);
   if (count($args) != 7) {
     return MENU_NOT_FOUND;
   }
 
   $image_path = file_stream_wrapper_uri_normalize($args[6]);
-
 
   drupal_goto($image_path);
 
