@@ -462,23 +462,14 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
  * @ingroup themeable
  */
 function uc_fedex_label_image() {
-  $args = explode('/', $_GET['q'], 7);
-  if (count($args) != 7) {
+  $args = explode('/', $_GET['q'], 8);
+  if (count($args) != 8) {
     return MENU_NOT_FOUND;
   }
 
-  $image_path = file_stream_wrapper_uri_normalize($args[6]);
+  $image_path = file_stream_wrapper_uri_normalize($args[7]);
 
-  drupal_goto($image_path);
-
-  // Alternate strategy for image display:
-  // Handle PDF files differently, because they can't be displayed
-  // with an <img> tag
-  $filename  = explode('.', end($args));
-  $extension = $filename[1];
-  if ($extension == 'pdf') {
-    drupal_goto($image_path);
-  }
+  file_transfer($image_path, file_get_content_headers($image_path));
 }
 
 
@@ -549,39 +540,78 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
         '#default_value' => $declared_value,
         '#required'      => TRUE,
       );
-      $pkg_type['dimensions'] = array(
-        '#type'          => 'fieldset',
-        '#title'         => t('Dimensions'),
-        '#description'   => t('Physical dimensions of the package.'),
-        '#theme'         => 'uc_fedex_dimensions',
+      $pkg_form['weight'] = array(
+        '#type'        => 'container',
+        '#description' => t('Weight of the package. Default value is sum of product weights in the package.'),
+        '#states'      => array(
+          'invisible' => array(
+            'input[name="shippable"]' => array('checked' => FALSE),
+          ),
+        ),
+        '#weight'      => 15,
+        '#theme'       => 'uc_product_inline_form',
       );
-      $pkg_form['dimensions']['units'] = array(
+      $pkg_form['weight']['weight'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('Weight'),
+        '#default_value' => isset($package->weight) ? $package->weight : 0,
+        '#size'          => 10,
+        '#maxlength'     => 15,
+      );
+      $pkg_form['weight']['units'] = array(
         '#type'          => 'select',
-        '#title'         => t('Units of measurement'),
+        '#title'         => t('Units'),
         '#options'       => array(
+          'lb' => t('Pounds'),
+          'kg' => t('Kilograms'),
+          'oz' => t('Ounces'),
+          'g'  => t('Grams'),
+        ),
+        '#default_value' => isset($package->weight_units) ?
+                            $package->weight_units        :
+                            variable_get('uc_weight_unit', 'lb'),
+      );
+      $pkg_form['dimensions'] = array(
+        '#type'          => 'container',
+        '#description'   => t('Physical dimensions of the package.'),
+        '#states'        => array(
+          'invisible' => array(
+            'input[name="shippable"]' => array('checked' => FALSE),
+          ),
+        ),
+        '#weight'        => 20,
+        '#theme'         => 'uc_product_inline_form',
+      );
+      $pkg_form['dimensions']['length'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('Length'),
+        '#default_value' => isset($package->length) ? $package->length : 1,
+        '#size'          => 10,
+      );
+      $pkg_form['dimensions']['width'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('Width'),
+        '#default_value' => isset($package->width) ? $package->width : 1,
+        '#size'          => 10,
+      );
+      $pkg_form['dimensions']['height'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('Height'),
+        '#default_value' => isset($package->height) ? $package->height : 1,
+        '#size'          => 10,
+      );
+      $pkg_form['dimensions']['length_units'] = array(
+        '#type' => 'select',
+        '#title' => t('Units'),
+        '#options' => array(
           'in' => t('Inches'),
           'ft' => t('Feet'),
           'cm' => t('Centimeters'),
           'mm' => t('Millimeters'),
         ),
-        '#default_value' => $product->length_units ?
-                            $product->length_units :
+        '#default_value' => isset($package->length_units) ?
+                            $package->length_units        :
                             variable_get('uc_length_unit', 'in'),
-      );
-      $pkg_form['dimensions']['length'] = array(
-        '#type'          => 'textfield',
-        '#title'         => t('Length'),
-        '#default_value' => $product->length,
-      );
-      $pkg_form['dimensions']['width'] = array(
-        '#type'          => 'textfield',
-        '#title'         => t('Width'),
-        '#default_value' => $product->width,
-      );
-      $pkg_form['dimensions']['height'] = array(
-        '#type'          => 'textfield',
-        '#title'         => t('Height'),
-        '#default_value' => $product->height,
       );
 
       $form['packages'][$id] = $pkg_form;
@@ -591,8 +621,8 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
   $form = array_merge($form, uc_shipping_address_form($form, $form_state, $addresses, $order));
 
   // Mark fields needed by the FedEx API as 'required'
-  foreach (array('delivery_email', 'delivery_last_name', 'delivery_phone', 'delivery_street1', 'delivery_city', 'delivery_zone', 'delivery_country', 'delivery_postal_code') as $field) {
-    $form['destination'][$field]['#required'] = TRUE;
+  foreach (array('email', 'last_name', 'phone', 'street1', 'city', 'zone', 'country', 'postal_code') as $field) {
+    $form['destination']['delivery_address'][$field]['#required'] = TRUE;
   }
 
   // Allow selection of address type
@@ -727,6 +757,8 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
     $package               = uc_shipping_package_load($id);
     $package->pkg_type     = $pkg_form['pkg_type'];
     $package->value        = $pkg_form['declared_value'];
+    $package->weight       = $pkg_form['weight']['weight'];
+    $package->weight_units = $pkg_form['weight']['units'];
     $package->length       = $pkg_form['dimensions']['length'];
     $package->width        = $pkg_form['dimensions']['width'];
     $package->height       = $pkg_form['dimensions']['height'];
