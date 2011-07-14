@@ -138,10 +138,11 @@ function uc_fedex_address_request($address) {
 
 
 /**
- * Convenience function to determine if an address is Residential or
- * Commercial.  This determination is made using the FedEx Address
- * Validation API if address validation is enabled in the module admin
- * settings.  Otherwise, the $default input parameter is used.
+ * Convenience function to determine if an address is Residential or Commercial.
+ *
+ * This determination is made using the FedEx Address Validation API if
+ * address validation is enabled in the module admin settings.  Otherwise,
+ * the $default input parameter is used.
  *
  * @param $address
  *   An object holding address data.

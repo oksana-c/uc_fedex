@@ -27,13 +27,6 @@ ini_set("soap.wsdl_cache_enabled", "1");
 
 /**
  * Implements hook_menu().
- *
- * Called when Drupal is building menus.  Cache parameter lets module know
- * if Drupal intends to cache menu or not - different results may be
- * returned for either case.
- *
- * @return
- *   An array with the menu path, callback, and parameters.
  */
 function uc_fedex_menu() {
   $items = array();
@@ -72,7 +65,7 @@ function uc_fedex_menu() {
  */
 function uc_fedex_init() {
 
-// Can we conditionally load based on
+// Can we conditionally load the address validation code based on
 // variable_get('uc_fedex_address_validation', FALSE) ?
 
   // Address Validation routines
@@ -106,8 +99,6 @@ function uc_fedex_cron_broken() {
 
 /**
  * Implements hook_theme().
- *
- * Used to declare module theme functions.
  */
 function uc_fedex_theme() {
   return array(
@@ -612,7 +603,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
 
 
 /**
- * Modify the rate received from FedEx before displaying to the customer.
+ * Modifies the rate received from FedEx before displaying to the customer.
  *
  * @param $rate
  *   Shipping rate without any rate markup.
@@ -643,7 +634,7 @@ function uc_fedex_rate_markup($rate) {
 
 
 /**
- * Modify the weight of shipment before sending to FedEx for a quote.
+ * Modifies the weight of shipment before sending to FedEx for a quote.
  *
  * @param $weight
  *   Shipping weight without any weight markup.
@@ -674,15 +665,15 @@ function uc_fedex_weight_markup($weight) {
 
 
 /**
- * Packages products into boxes subject to the FedEx weight limit,
- * corrected for any weight markup imposed by the administrator.
+ * Packages products into boxes subject to the FedEx weight limit, corrected
+ * for any weight markup imposed by the administrator.
  *
  * $package object returned from this routine contains the following members:
- *   ->quantity     Number of items in package.
- *   ->price        Value (sales price, in store currency) of items in package.
- *   ->weight       Actual weight of items in package, in store weight units.
- *   ->weight_units Set to store default, taken from uc_weight_unit variable.
- *   ->shipweight   Computed weight of package, including markup.
+ *   - quantity:     Number of items in package.
+ *   - price:        Value (sales price, in store currency) of items in package.
+ *   - weight:       Actual weight of items in package, in store weight units.
+ *   - weight_units: Set to store default, taken from uc_weight_unit variable.
+ *   - shipweight:   Computed weight of package, including markup.
  *
  * Store weight units are used internally for computation of package weights.
  * Each product may have its own weight units; these are converted to store
@@ -854,6 +845,7 @@ function _uc_fedex_package_types() {
 
 /**
  * Convenience function to get FedEx codes for their Ground services.
+ *
  * This should probably be sucked out of the WSDL file, to be sure
  * the options stay correct and up-to-date.
  *
@@ -870,6 +862,7 @@ function _uc_fedex_ground_services() {
 
 /**
  * Convenience function to get FedEx codes for their Express services.
+ *
  * This should probably be sucked out of the WSDL file, to be sure
  * the options stay correct and up-to-date.
  *
@@ -895,6 +888,7 @@ function _uc_fedex_express_services() {
 
 /**
  * Convenience function to get FedEx codes for their Freight services.
+ *
  * This should probably be sucked out of the WSDL file, to be sure
  * the options stay correct and up-to-date.
  *
@@ -944,6 +938,7 @@ function _uc_fedex_shipment_special_types() {
 
 /**
  * Convenience function to get FedEx codes for dropoff and pickup.
+ *
  * This should probably be sucked out of the WSDL file, to be sure
  * the options stay correct and up-to-date.
  *
@@ -963,12 +958,13 @@ function _uc_fedex_dropoff_types() {
 
 
 /**
- * Print SOAP request and response, iff allowed by user access permissions.
+ * Prints SOAP request and response, iff allowed by user access permissions.
+ *
  * To view transaction details, set display debug TRUE in
  * admin/store/settings/quotes/edit
  *
  * @param $client
- *   SOAP client object containing transaction history
+ *   SOAP client object containing transaction history.
  */
 function print_request_response($client) {
   if (user_access('configure quotes') &&
