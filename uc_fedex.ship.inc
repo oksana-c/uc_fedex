@@ -600,7 +600,7 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
         '#default_value' => isset($package->height) ? $package->height : 1,
         '#size'          => 10,
       );
-      $pkg_form['dimensions']['length_units'] = array(
+      $pkg_form['dimensions']['units'] = array(
         '#type' => 'select',
         '#title' => t('Units'),
         '#options' => array(
