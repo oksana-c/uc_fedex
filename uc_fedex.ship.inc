@@ -431,7 +431,7 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
     // Save the label
     $directory = 'public://fedex_labels';
     if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
-      $label_path = $directory . '/label' . $package->tracking_number . '.' . strtolower(variable_get('uc_fedex_label_image_format', 'PDF'));
+      $label_path = $directory . '/label-' . $package->tracking_number . '.' . strtolower(variable_get('uc_fedex_label_image_format', 'PDF'));
       if ($label_file = file_save_data($label_image, $label_path, FILE_EXISTS_REPLACE)) {
         file_usage_add($label_file, 'uc_shipping', 'package', $package->package_id);
         $package->label_image = $label_file;

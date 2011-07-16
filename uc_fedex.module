@@ -79,19 +79,16 @@ function uc_fedex_init() {
  * Deletes FedEx shipping labels from the file system automatically
  * on a periodic basis.  Default period is 1 week.
  */
-function uc_fedex_cron_broken() {
-  $path = file_create_path('fedex_labels');
-  if (is_dir($path)) {
-    $files = array_diff(scandir($path), array('.', '..'));
-    if ($files) {
-      // Loop over label files in sites/default/files/fedex_labels
-      // and test creation date against 'uc_fedex_label_lifetime'
-      $cutoff = time() - variable_get('uc_fedex_label_lifetime', 604800);
-      foreach ($files as $file) {
-        if ($cutoff > filectime($path . '/' . $file)) {
-          unlink($path . '/' . $file);
-        }
-      }
+function uc_fedex_cron() {
+  $cutoff = REQUEST_TIME - variable_get('uc_fedex_label_lifetime', 604800);
+
+  // Loop over label files in public://fedex_labels and test
+  // creation date against 'uc_fedex_label_lifetime'
+  $files = file_scan_directory('public://fedex_labels', '/^label-/');
+  foreach ($files as $file) {
+    if ($cutoff > filectime($file->uri)) {
+      drupal_unlink($file->uri);
+      watchdog('uc_fedex', 'Removed uc_fedex label file @file.', array('@file' => $file->uri), WATCHDOG_NOTICE);
     }
   }
 }
