@@ -496,7 +496,12 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
   $addresses = array();
 
   // Container for package data
-  $form['packages'] = array('#tree' => TRUE);
+  $form['packages'] = array(
+    '#type'        => 'fieldset',
+    '#title'       => t('Packages'),
+    '#collapsible' => TRUE,
+    '#tree'        => TRUE
+  );
   foreach ($package_ids as $id) {
     $package = uc_shipping_package_load($id);
     if ($package) {
@@ -716,6 +721,14 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
  * @see uc_fedex_confirm_shipment()
  */
 function uc_fedex_fulfill_order_validate($form, &$form_state) {
+
+  $errors = form_get_errors();
+  if (isset($errors)) {
+    // Some required elements are missing - don't bother with making
+    // a FedEx API call until that gets fixed.
+    return;
+  }
+
   $origin      = new stdClass();
   $destination = new stdClass();
   $packages    = array();
