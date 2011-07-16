@@ -301,7 +301,7 @@ function theme_uc_fedex_confirm_shipment($variables) {
 
   $output = '';
 
-  $output .= '<div class="shipping-address"><b>' . t('Ship from:') . '</b><br />';
+  $output .= '<div class="shipping-address"><b>' . t('Ship from') . ':</b><br />';
   $output .= uc_address_format(
     check_plain($_SESSION['fedex']['origin']->first_name),
     check_plain($_SESSION['fedex']['origin']->last_name),
@@ -316,7 +316,7 @@ function theme_uc_fedex_confirm_shipment($variables) {
   $output .= '<br />' . check_plain($_SESSION['fedex']['origin']->email);
   $output .= '</div>';
 
-  $output .= '<div class="shipping-address"><b>' . t('Ship to:') . '</b><br />';
+  $output .= '<div class="shipping-address"><b>' . t('Ship to') . ':</b><br />';
   $output .= uc_address_format(
     check_plain($_SESSION['fedex']['destination']->first_name),
     check_plain($_SESSION['fedex']['destination']->last_name),
@@ -330,15 +330,16 @@ function theme_uc_fedex_confirm_shipment($variables) {
   );
   $output .= '<br />' . check_plain($_SESSION['fedex']['destination']->email);
   $output .= '</div>';
-  $output .= '<div class="shipment-data">';
+  $output .= '<div class="shipment-data"><b>' . t('Shipping method') . ':</b><br />';
   $method = uc_fedex_uc_shipping_method();
   $accessorials = array_merge(
     $method['fedex']['quote']['accessorials'],
     $method['fedex_ground']['quote']['accessorials'],
     $method['fedex_freight']['quote']['accessorials']
   );
-  $output .= '<b>' . $accessorials[$_SESSION['fedex']['service']] . '</b><br />';
-  $output .= '<i>' . check_plain($_SESSION['fedex']['rate']['type']) . '</i>: ' . uc_currency_format($_SESSION['fedex']['rate']['amount']) . ' (' . check_plain($_SESSION['fedex']['rate']['currency']) . ')<br />';
+  $output .= $accessorials[$_SESSION['fedex']['service']] . '<br />';
+  $output .= '<i>' . check_plain($_SESSION['fedex']['rate']['type']) . '</i>: ' . uc_currency_format($_SESSION['fedex']['rate']['amount']) . ' (' . check_plain($_SESSION['fedex']['rate']['currency']) . ') -- ';
+  $output .= '<i>' . t('Paid') . '</i>: ' . $_SESSION['fedex']['paid'] . '<br />';
   $ship_date = $_SESSION['fedex']['ship_date'];
   $output .= 'Ship date: ' . format_date(gmmktime(12, 0, 0, $ship_date['month'], $ship_date['day'], $ship_date['year']), 'custom', variable_get('uc_date_format_default', 'm/d/Y'));
   $output .= "</div>\n<br style=\"clear: both;\" />";
@@ -505,14 +506,15 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
         }
       }
 
-      // Create list of products and get a representative product
-      // for default values
+      // Create list of products and get a representative product (last one in
+      // the loop) to use for some default values
       $product_list = array();
       $declared_value = 0;
       foreach ($package->products as $product) {
         $product_list[]  = $product->qty . ' x ' . $product->model;
         $declared_value += $product->qty * $product->price;
       }
+      // Use last product in package to determine package type
       $fedex_data = db_query("SELECT pkg_type FROM {uc_fedex_products} WHERE nid = :nid", array(':nid' => $product->nid))->fetchAssoc();
       $product->fedex = $fedex_data;
       $pkg_form = array(
@@ -644,7 +646,9 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
   );
   $default_service = '';
   $method          = $order->quote['method'];
-  if ($method == 'fedex') {
+  if ($method == 'fedex_ground' ||
+      $method == 'fedex'        ||
+      $method == 'fedex_freight') {
     $default_service = $order->quote['accessorials'];
     $method          = $services[$default_service];
   }
@@ -660,21 +664,21 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
   $form['shipment']['shipping_choice'] = array(
     '#type'   => 'markup',
     '#prefix' => '<div>',
-    '#markup'  => t('Customer selected @method as the shipping method and paid @rate', array('@method' => $method, '@rate' => uc_currency_format($order->quote['rate']))),
+    '#markup' => t('Customer selected @method as the shipping method and paid @rate', array('@method' => $method, '@rate' => uc_currency_format($order->quote['rate']))),
     '#suffix' => '</div>',
   );
 
-  // Pass shipping charge paid information on to _validate() so it
-  // can be displayed alongside actual costs?
+  // Pass shipping charge paid information on to validation function so it
+  // can be displayed alongside actual costs
+  $form['shipment']['paid'] = array(
+    '#type'  => 'value',
+    '#value' => uc_currency_format($order->quote['rate']),
+  );
 
   $form['shipment']['service'] = array(
     '#type'          => 'select',
     '#title'         => t('FedEx service'),
-    '#options'       => array_merge(
-      _uc_fedex_ground_services(),
-      _uc_fedex_express_services(),
-      _uc_fedex_freight_services()
-    ),
+    '#options'       => $services,
     '#default_value' => $default_service,
   );
   $today = getdate();
@@ -767,6 +771,7 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
     $_SESSION['fedex']['packages'][$id] = $package;
   }
   $_SESSION['fedex']['service']   = $form_state['values']['service'];
+  $_SESSION['fedex']['paid']      = $form_state['values']['paid'];
   $_SESSION['fedex']['ship_date'] = $form_state['values']['ship_date'];
   $_SESSION['fedex']['reference'] = $form_state['values']['reference'];
   $_SESSION['fedex']['order_id']  = $form_state['values']['order_id'];
