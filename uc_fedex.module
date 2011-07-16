@@ -81,6 +81,10 @@ function uc_fedex_init() {
  */
 function uc_fedex_cron() {
   $cutoff = REQUEST_TIME - variable_get('uc_fedex_label_lifetime', 604800);
+  if ($cutoff == REQUEST_TIME) {
+    // Label lifetime is set to 0, meaning never delete
+    return;
+  }
 
   // Loop over label files in public://fedex_labels and test
   // creation date against 'uc_fedex_label_lifetime'
