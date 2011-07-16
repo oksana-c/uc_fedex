@@ -77,7 +77,8 @@ function uc_fedex_init() {
  * Implements hook_cron().
  *
  * Deletes FedEx shipping labels from the file system automatically
- * on a periodic basis.  Default period is 1 week.
+ * on a periodic basis.  Cron must be enabled for automatic deletion.
+ * Default lifetime is 1 week (604800 seconds).
  */
 function uc_fedex_cron() {
   $cutoff = REQUEST_TIME - variable_get('uc_fedex_label_lifetime', 604800);
