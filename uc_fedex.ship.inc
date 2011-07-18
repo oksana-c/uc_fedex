@@ -608,8 +608,8 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
         '#size'          => 10,
       );
       $pkg_form['dimensions']['units'] = array(
-        '#type' => 'select',
-        '#title' => t('Units'),
+        '#type'    => 'select',
+        '#title'   => t('Units'),
         '#options' => array(
           'in' => t('Inches'),
           'ft' => t('Feet'),
