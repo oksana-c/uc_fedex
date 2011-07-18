@@ -645,9 +645,12 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
   );
 
   // Determine shipping option chosen by the customer
-  $methods  = module_invoke_all('uc_shipping_method');
-  $services = $methods[$order->quote['method']]['quote']['accessorials'];
-  $method   = $services[$order->quote['accessorials']];
+  $method  = $order->quote['method'];
+  $methods = module_invoke_all('uc_shipping_method');
+  if (isset($methods[$method])) {
+    $services = $methods[$method]['quote']['accessorials'];
+    $method   = $services[$order->quote['accessorials']];
+  }
 
   // Container for shipment data
   $form['shipment'] = array(
