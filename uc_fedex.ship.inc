@@ -644,19 +644,10 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
     '#required'      => TRUE,
   );
 
-  $services = array_merge(
-    _uc_fedex_ground_services(),
-    _uc_fedex_express_services(),
-    _uc_fedex_freight_services()
-  );
-  $default_service = '';
-  $method          = $order->quote['method'];
-  if ($method == 'fedex_ground' ||
-      $method == 'fedex'        ||
-      $method == 'fedex_freight') {
-    $default_service = $order->quote['accessorials'];
-    $method          = $services[$default_service];
-  }
+  // Determine shipping option chosen by the customer
+  $methods  = module_invoke_all('uc_shipping_method');
+  $services = $methods[$order->quote['method']]['quote']['accessorials'];
+  $method   = $services[$order->quote['accessorials']];
 
   // Container for shipment data
   $form['shipment'] = array(
@@ -669,7 +660,7 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
   $form['shipment']['shipping_choice'] = array(
     '#type'   => 'markup',
     '#prefix' => '<div>',
-    '#markup' => t('Customer selected @method as the shipping method and paid @rate', array('@method' => $method, '@rate' => uc_currency_format($order->quote['rate']))),
+    '#markup' => t('Customer selected "@method" as the shipping method and paid @rate', array('@method' => $method, '@rate' => uc_currency_format($order->quote['rate']))),
     '#suffix' => '</div>',
   );
 
@@ -679,6 +670,19 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
     '#type'  => 'value',
     '#value' => uc_currency_format($order->quote['rate']),
   );
+
+  $services = array_merge(
+    _uc_fedex_ground_services(),
+    _uc_fedex_express_services(),
+    _uc_fedex_freight_services()
+  );
+  $default_service = '';
+  $method          = $order->quote['method'];
+  if ($method == 'fedex_ground' ||
+      $method == 'fedex'        ||
+      $method == 'fedex_freight') {
+    $default_service = $order->quote['accessorials'];
+  }
 
   $form['shipment']['service'] = array(
     '#type'          => 'select',
