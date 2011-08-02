@@ -223,7 +223,7 @@ needs to ensure that your software (this module) AND your hardware (printer)
 work together to generate labels that can be properly scanned by FedEx.
 
 FedEx supports LASER printer labels and THERMAL printer labels. LABELS
-PRINTER ON INKJET PRINTERS ARE NOT SUPPORTED AND WILL NOT BE APPROVED.
+PRINTED ON INKJET PRINTERS ARE NOT SUPPORTED AND WILL NOT BE APPROVED.
 Color laser printers may be used, but in "black and white" mode only.
 
 In order to generate labels, Ubercart must be configured to require

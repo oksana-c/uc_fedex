@@ -104,7 +104,6 @@ function uc_fedex_admin_settings() {
     );
     $conditions = rules_config_load('get_quote_from_fedex_ground');
     if ($conditions) {
-      RulesPluginUI::$basePath = 'admin/config/workflow/rules/components';
       $conditions->form($form['uc_fedex_service_selection']['uc_fedex_ground_conditions'], $form_state);
     }
   }
@@ -128,7 +127,6 @@ function uc_fedex_admin_settings() {
     );
     $conditions = rules_config_load('get_quote_from_fedex');
     if ($conditions) {
-      RulesPluginUI::$basePath = 'admin/config/workflow/rules/components';
       $conditions->form($form['uc_fedex_service_selection']['uc_fedex_express_conditions'], $form_state);
     }
   }
@@ -151,7 +149,6 @@ function uc_fedex_admin_settings() {
     );
     $conditions = rules_config_load('get_quote_from_fedex');
     if ($conditions) {
-      RulesPluginUI::$basePath = 'admin/config/workflow/rules/components';
       $conditions->form($form['uc_fedex_service_selection']['uc_fedex_express_freight_conditions'], $form_state);
     }
   }
@@ -174,7 +171,6 @@ function uc_fedex_admin_settings() {
     );
     $conditions = rules_config_load('get_quote_from_fedex_freight');
     if ($conditions) {
-      RulesPluginUI::$basePath = 'admin/config/workflow/rules/components';
       $conditions->form($form['uc_fedex_service_selection']['uc_fedex_freight_conditions'], $form_state);
     }
   }
