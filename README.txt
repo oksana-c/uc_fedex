@@ -90,12 +90,7 @@ PHP 5 built with --enable-soap and --with-openssl is REQUIRED for this
 module to work.
 
 The FedEx Web Services API uses SOAP over HTTPS for communication with the
-FedEx Server.  SOAP is a standard extension to PHP 5, but is only poorly
-supported via a contributed library for PHP 4. Because of this, and because
-Drupal is already planning on requiring PHP 5.2 (in version 7.0), and because
-PHP 5 is widely available and several years old already, I have decided that
-it doesn't make sense to try to force things to work with PHP 4.  So if you
-need to use this module, you'll have to be running PHP 5.
+FedEx Server.  SOAP is a standard extension to PHP 5.
 
 
 Before You Begin
