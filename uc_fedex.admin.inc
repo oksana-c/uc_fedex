@@ -26,7 +26,14 @@ function uc_fedex_admin_settings() {
   module_load_include('inc', 'uc_fedex', 'uc_fedex.ship');
 
   // Put fieldsets into vertical tabs
-  $form['fedex-settings'] = array('#type' => 'vertical_tabs');
+  $form['fedex-settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#attached' => array(
+      'js' => array(
+        'vertical-tabs' => drupal_get_path('module', 'uc_fedex') . '/uc_fedex.admin.js',
+      ),
+    ),
+  );
 
   // Container for credentials forms
   $form['uc_fedex_credentials'] = array(
@@ -36,11 +43,6 @@ function uc_fedex_admin_settings() {
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
     '#group'         => 'fedex-settings',
-    '#attached' => array(
-      'js' => array(
-        'vertical-tabs' => drupal_get_path('module', 'uc_fedex') . '/uc_fedex.admin.js',
-      ),
-    ),
   );
 
   // Form to set the developer key
@@ -94,11 +96,6 @@ function uc_fedex_admin_settings() {
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
     '#group'         => 'fedex-settings',
-    '#attached' => array(
-      'js' => array(
-        'vertical-tabs' => drupal_get_path('module', 'uc_fedex') . '/uc_fedex.admin.js',
-      ),
-    ),
   );
 
   // Form to restrict FedEx Ground services available to customer
@@ -206,11 +203,6 @@ function uc_fedex_admin_settings() {
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
     '#group'         => 'fedex-settings',
-    '#attached' => array(
-      'js' => array(
-        'vertical-tabs' => drupal_get_path('module', 'uc_fedex') . '/uc_fedex.admin.js',
-      ),
-    ),
   );
 
   // Form to set choose between LIST quotes and ACCOUNT quotes
@@ -272,11 +264,6 @@ function uc_fedex_admin_settings() {
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
     '#group'         => 'fedex-settings',
-    '#attached' => array(
-      'js' => array(
-        'vertical-tabs' => drupal_get_path('module', 'uc_fedex') . '/uc_fedex.admin.js',
-      ),
-    ),
   );
 
   // Form to select type of rate markup
@@ -327,11 +314,6 @@ function uc_fedex_admin_settings() {
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
     '#group'         => 'fedex-settings',
-    '#attached' => array(
-      'js' => array(
-        'vertical-tabs' => drupal_get_path('module', 'uc_fedex') . '/uc_fedex.admin.js',
-      ),
-    ),
   );
 
   // Form to select Residential/Commercial destination address
@@ -371,11 +353,6 @@ function uc_fedex_admin_settings() {
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
     '#group'         => 'fedex-settings',
-    '#attached' => array(
-      'js' => array(
-        'vertical-tabs' => drupal_get_path('module', 'uc_fedex') . '/uc_fedex.admin.js',
-      ),
-    ),
   );
 
   // Form to select label image format
