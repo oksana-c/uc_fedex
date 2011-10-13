@@ -497,7 +497,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   // Drupal 6.x version of format_date() doesn't support 'c', so until
   // then we use date() directly.  date() doesn't take care of site
   // timezone, though.
-  //$request['RequestedShipment']['ShipTimestamp'] = format_date(time(), 'custom', 'c');
+  //$request['RequestedShipment']['ShipTimestamp'] = format_date(REQUEST_TIME, 'custom', 'c');
   $request['RequestedShipment']['ShipTimestamp'] = date('c');
 
   //

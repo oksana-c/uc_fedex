@@ -97,10 +97,10 @@ function uc_fedex_admin_settings() {
 
   if (module_exists('rules')) {
     $form['uc_fedex_service_selection']['uc_fedex_ground_conditions'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('FedEx Ground service conditions'),
+      '#type'        => 'fieldset',
+      '#title'       => t('FedEx Ground service conditions'),
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#collapsed'   => TRUE,
     );
     $conditions = rules_config_load('get_quote_from_fedex_ground');
     if ($conditions) {
@@ -120,10 +120,10 @@ function uc_fedex_admin_settings() {
 
   if (module_exists('rules')) {
     $form['uc_fedex_service_selection']['uc_fedex_express_conditions'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('FedEx Express service conditions'),
+      '#type'        => 'fieldset',
+      '#title'       => t('FedEx Express service conditions'),
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#collapsed'   => TRUE,
     );
     $conditions = rules_config_load('get_quote_from_fedex');
     if ($conditions) {
@@ -142,10 +142,10 @@ function uc_fedex_admin_settings() {
 
   if (module_exists('rules')) {
     $form['uc_fedex_service_selection']['uc_fedex_express_freight_conditions'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('FedEx Express Freight service conditions'),
+      '#type'        => 'fieldset',
+      '#title'       => t('FedEx Express Freight service conditions'),
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#collapsed'   => TRUE,
     );
     $conditions = rules_config_load('get_quote_from_fedex');
     if ($conditions) {
@@ -164,10 +164,10 @@ function uc_fedex_admin_settings() {
 
   if (module_exists('rules')) {
     $form['uc_fedex_service_selection']['uc_fedex_freight_conditions'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('FedEx Freight service conditions'),
+      '#type'        => 'fieldset',
+      '#title'       => t('FedEx Freight service conditions'),
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#collapsed'   => TRUE,
     );
     $conditions = rules_config_load('get_quote_from_fedex_freight');
     if ($conditions) {
