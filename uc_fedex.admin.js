@@ -9,7 +9,7 @@ Drupal.behaviors.fedexAdminFieldsetSummaries = {
   attach: function (context) {
     $('fieldset#edit-uc-fedex-credentials', context).drupalSetSummary(function(context) {
       var server = $('#edit-uc-fedex-server-role', context).val();
-      return Drupal.t('Using FedEx @role server.', { '@role': server });
+      return Drupal.t('Using FedEx @role server', { '@role': server });
     });
 
     $('fieldset#edit-uc-fedex-markups', context).drupalSetSummary(function(context) {
@@ -23,10 +23,10 @@ Drupal.behaviors.fedexAdminFieldsetSummaries = {
 
     $('fieldset#edit-uc-fedex-validation', context).drupalSetSummary(function(context) {
       if ($('#edit-uc-fedex-address-validation').is(':checked')) {
-        return Drupal.t('Validation is enabled.');
+        return Drupal.t('Validation is enabled');
       }
       else {
-        return Drupal.t('Validation is disabled.');
+        return Drupal.t('Validation is disabled');
       }
     });
   }
