@@ -25,10 +25,13 @@ function uc_fedex_admin_settings() {
   // Label printing routines
   module_load_include('inc', 'uc_fedex', 'uc_fedex.ship');
 
+  $form['fedex-settings'] = array('#type' => 'vertical_tabs');
+
   // Container for credentials forms
   $form['uc_fedex_credentials'] = array(
     '#type'          => 'fieldset',
     '#title'         => t('Credentials'),
+    '#group'         => 'fedex-settings',
     '#description'   => t('Account number and authorization information.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
@@ -82,6 +85,7 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_service_selection'] = array(
     '#type'          => 'fieldset',
     '#title'         => t('Service Options'),
+    '#group'         => 'fedex-settings',
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
   );
@@ -187,6 +191,7 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_quote_options'] = array(
     '#type'          => 'fieldset',
     '#title'         => t('Quote Options'),
+    '#group'         => 'fedex-settings',
     '#description'   => t('Preferences that affect computation of quote.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
@@ -247,6 +252,7 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_markups'] = array(
     '#type'          => 'fieldset',
     '#title'         => t('Markups'),
+    '#group'         => 'fedex-settings',
     '#description'   => t('Modifiers to the shipping weight and quoted rate.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
@@ -296,6 +302,7 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_validation'] = array(
     '#type'          => 'fieldset',
     '#title'         => t('Address Validation'),
+    '#group'         => 'fedex-settings',
     '#description'   => t('Preferences for FedEx Address Validation.  Additional permissions from FedEx are required to use this feature.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
@@ -334,6 +341,7 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_labels'] = array(
     '#type'          => 'fieldset',
     '#title'         => t('Label Printing'),
+    '#group'         => 'fedex-settings',
     '#description'   => t('Preferences for FedEx Shipping Label Printing.  Additional permissions from FedEx are required to use this feature.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
