@@ -29,6 +29,15 @@ Drupal.behaviors.fedexAdminFieldsetSummaries = {
         return Drupal.t('Validation is disabled');
       }
     });
+
+    $('fieldset#edit-uc-fedex-quote-options', context).drupalSetSummary(function(context) {
+      if ($('#edit-uc-fedex-insurance').is(':checked')) {
+        return Drupal.t('Packages are insured');
+      }
+      else {
+        return Drupal.t('Packages are not insured');
+      }
+    });
   }
 };
 
