@@ -4,5 +4,6 @@ dependencies[] = uc_quote
 dependencies[] = rules
 package = Ubercart - fulfillment
 core = 7.x
-configure = admin/store/settings/quotes/methods/fedex/edit
+
+configure = admin/store/settings/quotes/methods/fedex
 stylesheets[all][] = uc_fedex.css

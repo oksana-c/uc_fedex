@@ -233,7 +233,7 @@ function uc_fedex_admin_settings() {
     '#title'         => t('FedEx Package Type'),
     '#default_value' => variable_get('uc_fedex_package_type', _uc_fedex_package_types()),
     '#options'       => _uc_fedex_package_types(),
-    '#description'   => t('Package Type.  It is assumed that all your packages are using the same packaging.'),
+    '#description'   => t('Package Type. It is assumed that all your packages are using the same packaging. Note that FedEx-supplied packaging material may only be used for certain FedEx services.'),
   );
 
   // Form to select packaging type
@@ -253,7 +253,7 @@ function uc_fedex_admin_settings() {
     '#type'          => 'checkbox',
     '#title'         => t('Add Insurance to shipping quote'),
     '#default_value' => variable_get('uc_fedex_insurance', FALSE),
-    '#description'   => t('When enabled, products are insured for their full value.'),
+    '#description'   => t('When enabled, the quote presented to the customer will include the cost of insurance for the full sales price of all products in the order.'),
   );
 
   // Container for markup forms
@@ -394,7 +394,14 @@ function uc_fedex_admin_settings() {
   // Register additional validation handler
   $form['#validate'][] = 'uc_fedex_admin_settings_validate';
 
-  return system_settings_form($form);
+  $form = system_settings_form($form);
+
+  // Add Cancel link
+  $form['actions']['cancel'] = array(
+    '#markup' => l(t('Cancel'), 'admin/store/settings/quotes'),
+  );
+
+  return $form;
 }
 
 

@@ -31,7 +31,7 @@ ini_set("soap.wsdl_cache_enabled", "1");
 function uc_fedex_menu() {
   $items = array();
 
-  $items['admin/store/settings/quotes/methods/fedex'] = array(
+  $items['admin/store/settings/quotes/settings/fedex'] = array(
     'title'            => 'FedEx',
     'page callback'    => 'drupal_get_form',
     'page arguments'   => array('uc_fedex_admin_settings'),
@@ -162,55 +162,64 @@ function uc_fedex_uc_shipping_method() {
     'fedex'         => 1,
     'fedex_freight' => 2,
   );
+  $operations = array(
+    'configure' => array(
+      'title' => t('configure'),
+      'href' => 'admin/store/settings/quotes/settings/fedex',
+    ),
+  );
 
   $methods = array(
     'fedex_ground' => array(
-      'id'      => 'fedex_ground',
-      'module'  => 'uc_fedex',
-      'title'   => t('FedEx (Ground)'),
-      'quote'   => array(
+      'id'         => 'fedex_ground',
+      'module'     => 'uc_fedex',
+      'title'      => t('FedEx (Ground)'),
+      'operations' => $operations,
+      'quote'      => array(
         'type'         => 'small_package',
         'callback'     => 'uc_fedex_quote',
         'accessorials' => _uc_fedex_ground_services(),
       ),
-      'ship'    => array(
+      'ship'       => array(
         'type'      => 'small_package',
         'callback'  => 'uc_fedex_fulfill_order',
         'file'      => 'uc_fedex.ship.inc',
         'pkg_types' => _uc_fedex_package_types(),
       ),
-      'enabled' => $enabled['fedex_ground'],
-      'weight'  => $weight['fedex_ground'],
+      'enabled'    => $enabled['fedex_ground'],
+      'weight'     => $weight['fedex_ground'],
     ),
     'fedex' => array(
-      'id'      => 'fedex',
-      'module'  => 'uc_fedex',
-      'title'   => t('FedEx (Express)'),
-      'quote'   => array(
+      'id'         => 'fedex',
+      'module'     => 'uc_fedex',
+      'title'      => t('FedEx (Express)'),
+      'operations' => $operations,
+      'quote'      => array(
         'type'         => 'small_package',
         'callback'     => 'uc_fedex_quote',
         'accessorials' => _uc_fedex_express_services(),
       ),
-      'ship'    => array(
+      'ship'       => array(
         'type'      => 'small_package',
         'callback'  => 'uc_fedex_fulfill_order',
         'file'      => 'uc_fedex.ship.inc',
         'pkg_types' => _uc_fedex_package_types(),
       ),
-      'enabled' => $enabled['fedex'],
-      'weight'  => $weight['fedex'],
+      'enabled'    => $enabled['fedex'],
+      'weight'     => $weight['fedex'],
     ),
     'fedex_freight' => array(
-      'id'      => 'fedex_freight',
-      'module'  => 'uc_fedex',
-      'title'   => t('FedEx (Freight)'),
-      'quote'   => array(
+      'id'         => 'fedex_freight',
+      'module'     => 'uc_fedex',
+      'title'      => t('FedEx (Freight)'),
+      'operations' => $operations,
+      'quote'      => array(
         'type'         => 'small_package',
         'callback'     => 'uc_fedex_quote',
         'accessorials' => _uc_fedex_freight_services(),
       ),
-      'enabled' => $enabled['fedex_freight'],
-      'weight'  => $weight['fedex_freight'],
+      'enabled'    => $enabled['fedex_freight'],
+      'weight'     => $weight['fedex_freight'],
     ),
   );
 
