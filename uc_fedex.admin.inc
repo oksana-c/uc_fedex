@@ -11,7 +11,7 @@
 /**
  * Default FedEx Web Services API settings.
  *
- * Records FedEx account information neccessary to use service. Allows testing
+ * Records FedEx account information necessary to use service. Allows testing
  * or production mode. Configures which FedEx services are quoted to customers.
  *
  * @return
