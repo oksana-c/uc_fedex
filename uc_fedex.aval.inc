@@ -53,8 +53,8 @@ function uc_fedex_address_request($address) {
 
   // FedEx account and meter number filled in by user on admin form
   $request['ClientDetail'] = array(
-      'AccountNumber' => variable_get('uc_fedex_account_number', 0),
-      'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
+    'AccountNumber' => variable_get('uc_fedex_account_number', 0),
+    'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
   );
 
   // Optional parameter, contains anything
