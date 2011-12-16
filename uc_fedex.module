@@ -13,7 +13,7 @@
 
 
 /** Maximum shipping weight for FedEx (non-Freight services) */
-define('PACKAGE_WEIGHT_LIMIT_LBS', 150.0);  // 150lbs
+define('FEDEX_PACKAGE_WEIGHT_LIMIT_LBS', 150.0);  // 150lbs
 
 // Set to 0 to disable caching of SOAP WSDL when developing your WSDL
 ini_set("soap.wsdl_cache_enabled", "1");
@@ -702,10 +702,10 @@ function _uc_fedex_package_products($products) {
   $packages = array();
 
   // Determine maximum weight of products we can put into one package
-  // while staying below PACKAGE_WEIGHT_LIMIT_LBS.  This number
+  // while staying below FEDEX_PACKAGE_WEIGHT_LIMIT_LBS.  This number
   // depends on the package weight markup set in the FedEx module
   // administration menu.
-  $products_max_weight = PACKAGE_WEIGHT_LIMIT_LBS;
+  $products_max_weight = FEDEX_PACKAGE_WEIGHT_LIMIT_LBS;
   $zero_markup = uc_fedex_weight_markup(0);
   if ($zero_markup == 0) {
     // Weight markup is a multiplier, because 0 * multiplier = 0
