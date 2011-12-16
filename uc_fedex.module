@@ -5,7 +5,7 @@
  * FedEx Web Services Rate / Available Services Quote.
  *
  * Shipping quote module that interfaces with the FedEx Web Services API
- * to get rates for small package shipments.  Implements a SOAP Web Service
+ * to get rates for small package shipments. Implements a SOAP Web Service
  * client.
  *
  * @author Tim Rohaly.    <http://drupal.org/user/202830>
@@ -77,7 +77,7 @@ function uc_fedex_init() {
  * Implements hook_cron().
  *
  * Deletes FedEx shipping labels from the file system automatically
- * on a periodic basis.  Cron must be enabled for automatic deletion.
+ * on a periodic basis. Cron must be enabled for automatic deletion.
  * Default lifetime is 1 week (604800 seconds).
  */
 function uc_fedex_cron() {
@@ -88,7 +88,7 @@ function uc_fedex_cron() {
   }
 
   // Loop over label files in public://fedex_labels and test
-  // creation date against 'uc_fedex_label_lifetime'
+  // creation date against 'uc_fedex_label_lifetime'.
   $files = file_scan_directory('public://fedex_labels', '/^label-/');
   foreach ($files as $file) {
     if ($cutoff > filectime($file->uri)) {
@@ -270,9 +270,9 @@ function uc_fedex_uc_store_status() {
 /**
  * Callback for retrieving a FedEx shipping quote.
  *
- * Requests a quote of all available FedEx services.  Quote returned
- * from the FedEx server is parsed and only the selected services are
- * presented to the user.
+ * Requests a quote of all available FedEx services. Quote returned from the
+ * FedEx server is parsed and only the selected services are presented to the
+ * user.
  *
  * @param $products
  *   Array of cart contents.
@@ -295,25 +295,24 @@ function uc_fedex_quote($products, $details, $method) {
     return array();
   }
 
-  // Assign products to one or more packages for quoting
+  // Assign products to one or more packages for quoting.
   $packages = _uc_fedex_package_products($products);
 
   if (!count($packages)) {
     // If _uc_fedex_package_products() returned no packages,
-    // then at least one item must be too heavy to ship via FedEx
+    // then at least one item must be too heavy to ship via FedEx.
 
     // Skip this shipping method.
     return array();
   }
 
-  // Create and fill object with info needed about origin
+  // Create and fill object with info needed about origin.
   $origin  = variable_get('uc_quote_store_default_address', new UcAddress());
   $country = db_query("SELECT * FROM {uc_countries} WHERE country_id = :id", array(':id' => $origin->country));
   $country_data = $country->fetchObject();
   $origin->country_iso_code_2 = $country_data->country_iso_code_2;
 
-  // Create and fill object with info needed about destination
-  $destination = (object) $details;
+  // Fill $destination object with extra needed info.
   if ($origin->country == $destination->country) {  // Try to save a DB query
     $destination->country_iso_code_2 = $origin->country_iso_code_2;
   }
@@ -326,16 +325,16 @@ function uc_fedex_quote($products, $details, $method) {
   $debug = user_access('configure quotes') &&
            variable_get('uc_quote_display_debug', FALSE);
 
-  // Determine if address is Residential or Commercial
-  // If Address Validation API is not used or fails, default to store default
+  // Determine if address is Residential or Commercial.
+  // If Address Validation API is not used or fails, default to store default.
   $destination->residential = uc_fedex_address_is_residential($destination, variable_get('uc_fedex_residential_quotes', 1), $debug);
 
   // Call the method that does the actual SOAP request to the FedEx Server
   // Response contains all available services and rates
   $response = uc_fedex_rate_request($packages, $origin, $destination);
 
-  // Construct an array containing only those services that the
-  // store admin has allowed in admin/store/settings/quotes/edit
+  // Construct an array containing only those services that the store admin
+  // has allowed in admin/store/settings/quotes/edit.
   $fedex_services = array();
   switch ($method['id']) {
     case 'fedex_ground':
@@ -349,23 +348,23 @@ function uc_fedex_quote($products, $details, $method) {
       break;
   }
 
-  // Initialize return array
+  // Initialize return array.
   $quotes  = array();
 
   if (!isset($response->RateReplyDetails)) {
     // Memphis, we have a problem ...
-    // Error returned from FedEx server - will print in $message box
+    // Error returned from FedEx server - will print in $message box.
     // Don't even try to extract a quote from the response, just return
     // empty quote array.
     return $quotes;
   }
 
-  // Test responses to see if we are interested in that service
+  // Test responses to see if we are interested in that service.
   foreach ($response->RateReplyDetails as $options) {
     $service = $options->ServiceType;
 
     if (in_array($service, $fedex_services)) {
-      // Check to see if we're quoting ACCOUNT or LIST rates
+      // Check to see if we're quoting ACCOUNT or LIST rates.
       if (variable_get('uc_fedex_quote_type', 'list') == 'list') {  // LIST rate
         // LIST quotes return both ACCOUNT rates and LIST rates:
         // Order not guaranteed.
@@ -381,7 +380,7 @@ function uc_fedex_quote($products, $details, $method) {
       }
       else {  // ACCOUNT rate
         // ACCOUNT quotes may return either ACCOUNT rates only OR
-        // ACCOUNT rates and LIST rates.  Check.
+        // ACCOUNT rates and LIST rates. Check.
         if (is_array($options->RatedShipmentDetails)) {
           foreach ($options->RatedShipmentDetails as $ratedetail) {
             if ($ratedetail->ShipmentRateDetail->RateType == 'PAYOR_ACCOUNT') {
@@ -393,9 +392,9 @@ function uc_fedex_quote($products, $details, $method) {
           $ratedetail = $options->RatedShipmentDetails;
         }
       }
-      // need to handle dimensional rates, other modifiers.
+      // @todo: need to handle dimensional rates, other modifiers.
 
-      // Markup rate before customer sees it
+      // Markup rate before customer sees it.
       $rate = uc_fedex_rate_markup($ratedetail->ShipmentRateDetail->TotalNetCharge->Amount);
 
       $quotes[$service] = array(
@@ -409,7 +408,7 @@ function uc_fedex_quote($products, $details, $method) {
 //  $quotes['data']['debug'] = htmlentities($response).'<br />';
   }
 
-  // Sort rate quotes in order of increasing price
+  // Sort rate quotes in order of increasing price.
   uasort($quotes, 'uc_quote_price_sort');
 
   return $quotes;
@@ -418,10 +417,9 @@ function uc_fedex_quote($products, $details, $method) {
 
 /**
  * Constructs and executes a SOAP RateAvailabilityService request.
- * Obtains Rate and Available Services information needed for
- * shipping quote.
  *
- * SOAP call parameters are set in the order they appear in the WSDL file
+ * Obtains Rate and Available Services information needed for shipping quote.
+ * SOAP call parameters are set in the order they appear in the WSDL file.
  * Associative array of DOM returned.
  *
  * @param $packages
@@ -437,12 +435,12 @@ function uc_fedex_quote($products, $details, $method) {
 function uc_fedex_rate_request($packages, $origin, $destination) {
 
   // Set up SOAP call.
-  // Allow tracing so details of request can be retrieved for error logging
+  // Allow tracing so details of request can be retrieved for error logging.
   $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
               . '/wsdl-' . variable_get('uc_fedex_server_role', 'testing')
               . '/RateService_v8.wsdl', array('trace' => 1));
 
-  // FedEx user key and password filled in by user on admin form
+  // FedEx user key and password filled in by user on admin form.
   $request['WebAuthenticationDetail'] = array(
     'UserCredential' => array(
       'Key'      => variable_get('uc_fedex_user_credential_key', 0),
@@ -450,18 +448,18 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     )
   );
 
-  // FedEx account and meter number filled in by user on admin form
+  // FedEx account and meter number filled in by user on admin form.
   $request['ClientDetail'] = array(
       'AccountNumber' => variable_get('uc_fedex_account_number', 0),
       'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
   );
 
-  // Optional parameter, contains anything
+  // Optional parameter, contains anything.
   $request['TransactionDetail'] = array(
     'CustomerTransactionId' => '*** Rate/Available Services Request v8 from Ubercart ***'
   );
 
-  // Rate Services Availability Request v8.0.0
+  // Rate Services Availability Request v8.0.0.
   $request['Version'] = array(
     'ServiceId'    => 'crs',
     'Major'        => '8',
@@ -469,7 +467,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     'Minor'        => '0',
   );
 
-  // Grab details of sender origin - not necessarily package origin
+  // Grab details of sender origin - not necessarily package origin.
   $request['RequestedShipment']['Shipper'] = array(
     'Address' => array(
       'PostalCode'  => $origin->postal_code,
@@ -477,7 +475,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     )
   );
 
-  // Grab details of package destination
+  // Grab details of package destination.
   $request['RequestedShipment']['Recipient'] = array(
     'Address' => array(
       'PostalCode'  => $destination->postal_code,
@@ -486,26 +484,25 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     )
   );
 
-  // Currency for quote
+  // Currency for quote.
   $request['RequestedShipment']['CurrencyType'] = variable_get('uc_currency_code', 'USD');
 
-  // Set Pickup/Dropoff type
+  // Set Pickup/Dropoff type.
   $request['RequestedShipment']['DropoffType'] = variable_get('uc_fedex_dropoff_type', 'REGULAR_PICKUP');
 
   // Note that ACCOUNT rates *require* a valid account number
-  // and return accurate answers on the production server
+  // and return accurate answers on the production server.
   $request['RequestedShipment']['RateRequestTypes'] = strtoupper(variable_get('uc_fedex_quote_type', 'list'));
 
   // When the package is going to ship
-// have to think about this -
+// @todo: have to think about this -
 // cutoff times, commits store owner to exact ship date, etc.
 // Probably have to make an admin menu option with cutoff time, after
 // which ShipDate becomes "tomorrow" unless of course tomorrow is a
-// weekend when you're closed...  But this shouldn't affect the rate
+// weekend when you're closed... But this shouldn't affect the rate.
 
-  // Drupal 6.x version of format_date() doesn't support 'c', so until
-  // then we use date() directly.  date() doesn't take care of site
-  // timezone, though.
+  // Drupal 6.x version of format_date() doesn't support 'c', so until then we
+  // use date() directly. date() doesn't take care of site timezone, though.
   //$request['RequestedShipment']['ShipTimestamp'] = format_date(REQUEST_TIME, 'custom', 'c');
   $request['RequestedShipment']['ShipTimestamp'] = date('c');
 
@@ -519,11 +516,10 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   $request['RequestedShipment']['PackageCount']  = count($packages);
   $request['RequestedShipment']['RequestedPackageLineItems'] = array();
 
-  // Determine weight and length units to send to FedEx
+  // Determine weight and length units to send to FedEx.
 
-  // FedEx supports only LB and KG; if store units are set to
-  // something else then determine conversion factor to apply
-  // to package weights
+  // FedEx supports only LB and KG; if store units are set to something else
+  // then determine conversion factor to apply to package weights.
   $weight_units = strtoupper(variable_get('uc_weight_unit', 'LB'));
   $weight_conversion_factor = 1;
   if ($weight_units != 'LB' && $weight_units != 'KG') {
@@ -531,8 +527,8 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     $weight_units = 'LB';
   }
 
-  // FedEx supports only IN and CM; if store units are set to something
-  // else then determine conversion factor to apply to package lengths
+  // FedEx supports only IN and CM; if store units are set to something else
+  // then determine conversion factor to apply to package lengths.
   $length_units = strtoupper(variable_get('uc_length_unit', 'IN'));
   $length_conversion_factor = 1;
   if ($length_units != 'IN' && $length_units != 'CM') {
@@ -540,19 +536,19 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
     $length_units = 'IN';
   }
 
-  // Iterate over $packages to account for multi-package shipments
+  // Iterate over $packages to account for multi-package shipments.
   $sequence = 0;
   foreach ($packages as $package) {
     $sequence++;
     $package_properties = array(
       'SequenceNumber' => $sequence,
-      // Weights must be rounded up to nearest integer value
+      // Weights must be rounded up to nearest integer value.
       'Weight' => array(
         'Value'  => ceil($package->shipweight * $weight_conversion_factor),
         'Units'  => $weight_units,
       ),
-      // Lengths must be rounded up to nearest integer value
-      // Package size hardwired to 1" x 1" x 1" to force weight-based rates
+      // Lengths must be rounded up to nearest integer value.
+      // Package size hardwired to 1" x 1" x 1" to force weight-based rates.
       'Dimensions' => array(
         'Length' => ceil(1.0 * $length_conversion_factor),
         'Width'  => ceil(1.0 * $length_conversion_factor),
@@ -561,7 +557,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
       ),
     );
 
-    // Add Insurance if requested
+    // Add Insurance if requested.
     if (variable_get('uc_fedex_insurance', FALSE)) {
       $package_properties['InsuredValue'] = array(
         'Amount'   => $package->price,
@@ -569,10 +565,10 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
       );
     }
 
-    // Fill in SOAP request with $package_properties
+    // Fill in SOAP request with $package_properties.
     $request['RequestedShipment']['RequestedPackageLineItems'][] = $package_properties;
 
-    // Grab package origin - not necessarily the same as shipper
+    // Grab package origin - not necessarily the same as shipper.
 //    $request['RequestedShipment']['RequestedPackageLineItems']['Origin'] = array(
 //      'Address' => array(
 //        'PostalCode'  => $origin->postal_code,
@@ -582,7 +578,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   }
 
   //
-  // Send the SOAP request to the FedEx server
+  // Send the SOAP request to the FedEx server.
   //
   try {
     $response = $client->getRates($request);
@@ -676,8 +672,13 @@ function uc_fedex_weight_markup($weight) {
 
 
 /**
+ * Packages products into boxes.
+ *
  * Packages products into boxes subject to the FedEx weight limit, corrected
- * for any weight markup imposed by the administrator.
+ * for any weight markup imposed by the administrator. All products are
+ * assumed to have the same origin address and destination address. If you want
+ * to package shipments that have multiple origin or destination addresses you
+ * must divide up the products first, then call this function multiple times.
  *
  * $package object returned from this routine contains the following members:
  *   - quantity:     Number of items in package.
@@ -701,71 +702,70 @@ function uc_fedex_weight_markup($weight) {
 function _uc_fedex_package_products($products) {
   $packages = array();
 
-  // Determine maximum weight of products we can put into one package
-  // while staying below FEDEX_PACKAGE_WEIGHT_LIMIT_LBS.  This number
-  // depends on the package weight markup set in the FedEx module
-  // administration menu.
+  // Determine maximum weight of products we can put into one package while
+  // staying below FEDEX_PACKAGE_WEIGHT_LIMIT_LBS. This number depends on the
+  // package weight markup set in the FedEx module administration menu.
   $products_max_weight = FEDEX_PACKAGE_WEIGHT_LIMIT_LBS;
   $zero_markup = uc_fedex_weight_markup(0);
   if ($zero_markup == 0) {
     // Weight markup is a multiplier, because 0 * multiplier = 0
-    // This handles percentage markup too
+    // This handles percentage markup too.
     $products_max_weight = $products_max_weight / uc_fedex_weight_markup(1);
   }
   else {
-    // Weight markup is an additive factor , because 0 + factor = factor != 0
+    // Weight markup is an additive factor , because 0 + factor = factor != 0.
     $products_max_weight = $products_max_weight - $zero_markup;
   }
 
   // Convert $products_max_weight (which is defined in LB units) into store
   // default weight units so we can perform all calculations and return all
-  // results in store default weight units
+  // results in store default weight units.
   $products_max_weight = $products_max_weight * uc_weight_conversion('LB', variable_get('uc_weight_unit', 'LB'));
 
   if (variable_get('uc_fedex_all_in_one', TRUE)) {
-    // All products in one package, break by weight
+    // All products in one package, break by weight.
 
-    // Create first package
+    // Create first package.
     $package = new stdClass();
     $package->quantity     = 0;
     $package->price        = 0.0;
     $package->weight       = 0.0;
     $package->weight_units = variable_get('uc_weight_unit', 'LB');
 
-    // Loop over products
+    // Loop over products.
     foreach ($products as $product) {
-      // Get item weight. Weight units are set on a per-product basis, so
-      // we convert as necessary in order to perform all calculations in the
-      // store weight units.
+      // Get item weight. Weight units are set on a per-product basis, so we
+      // convert as necessary in order to perform all calculations in the store
+      // weight units.
       $item_weight = $product->weight * uc_weight_conversion($product->weight_units, variable_get('uc_weight_unit', 'LB'));
 
       if ($item_weight >= $products_max_weight) {
         // This product is too heavy to ship via FexEx Ground or FedEx Express -
-        // quit with error
+        // quit with error.
         return array();
       }
 
-      // Loop over qty of each product
+      // Loop over qty of each product.
       for ($item = 0; $item < $product->qty; $item++) {
         // Test to see if putting this item into the current package put us
-        // over the weight limit
+        // over the weight limit.
         if (($package->weight + $item_weight) < $products_max_weight) {
-          // No?  Then update the package information and continue
+          // No?  Then update the package information and continue.
           $package->quantity += 1;
           $package->price    += $product->price;
           $package->weight   += $item_weight;
         }
         else {
           // If weight >= maximum allowed weight, save current package to
-          // array and start a new package:
+          // array and start a new package:.
 
-          // First, markup weight of current package
+          // First, markup weight of current package.
           $package->shipweight = uc_fedex_weight_markup($package->weight);
 
-          // Second, save current package to array
+          // Second, save current package to array.
           $packages[] = $package;
 
-          // Finally, start a new package
+          // Finally, start a new package.
           $package = new stdClass();
           $package->quantity     = 1;
           $package->price        = $product->price;
@@ -775,57 +775,57 @@ function _uc_fedex_package_products($products) {
       }
     }
 
-    // No more products left to package
-    // Take care of the partially-filled package we were working on
+    // No more products left to package.
+    // Take care of the partially-filled package we were working on.
 
-    // First, markup weight of partially-filled package
+    // First, markup weight of partially-filled package.
     $package->shipweight = uc_fedex_weight_markup($package->weight);
 
-    // Second, save the partially-filled package to the array and exit
+    // Second, save the partially-filled package to the array and exit.
     $packages[] = $package;
   }
   else { // variable_get('uc_fedex_all_in_one', TRUE) == FALSE
-    // Each product line item in its own package, subject only to pkg_qty
+    // Each product line item in its own package, subject only to pkg_qty.
 
-    // Loop over products
+    // Loop over products.
     foreach ($products as $product) {
-      // If pkg_qty == 0 we assume no limit on package quantity
+      // If pkg_qty == 0 we assume no limit on package quantity.
       if (!$product->pkg_qty) {
-        // Put all of this product line item into one package
+        // Put all of this product line item into one package.
         $product->pkg_qty = $product->qty;
       }
-      // Calculate number of full packages
+      // Calculate number of full packages.
       $num_of_pkgs = (int)($product->qty / $product->pkg_qty);
       if ($num_of_pkgs) {
         for ($i=0; $i<$num_of_pkgs; $i++) {
-          // Create full packages
+          // Create full packages.
           $package = new stdClass();
           $package->quantity     = $product->pkg_qty;
           $package->price        = $product->price  * $product->pkg_qty;
           $package->weight       = $product->weight * $product->pkg_qty;
           $package->weight_units = variable_get('uc_weight_unit', 'LB');
 
-          // Markup weight on a per-package basis
+          // Markup weight on a per-package basis.
           $package->shipweight = uc_fedex_weight_markup($package->weight);
 
-          // Save current package to array
+          // Save current package to array.
           $packages[] = $package;
         }
       }
-      // Deal with the remaining partially-full package
+      // Deal with the remaining partially-full package.
       $remaining_qty = $product->qty % $product->pkg_qty;
       if ($remaining_qty) {
-        // Create partially-full packages
+        // Create partially-full packages.
         $package = new stdClass();
         $package->quantity     = $remaining_qty;
         $package->price        = $product->price  * $remaining_qty;
         $package->weight       = $product->weight * $remaining_qty;
         $package->weight_units = variable_get('uc_weight_unit', 'LB');
 
-        // Markup weight on a per-package basis
+        // Markup weight on a per-package basis.
         $package->shipweight = uc_fedex_weight_markup($package->weight);
 
-        // Save package to array
+        // Save package to array.
         $packages[] = $package;
       }
     }
@@ -857,8 +857,8 @@ function _uc_fedex_package_types() {
 /**
  * Convenience function to get FedEx codes for their Ground services.
  *
- * This should probably be sucked out of the WSDL file, to be sure
- * the options stay correct and up-to-date.
+ * This should probably be sucked out of the WSDL file, to be sure the options
+ * stay correct and up-to-date.
  *
  * @return
  *   An array of human-friendly names for the different FedEx service codes.
@@ -874,8 +874,8 @@ function _uc_fedex_ground_services() {
 /**
  * Convenience function to get FedEx codes for their Express services.
  *
- * This should probably be sucked out of the WSDL file, to be sure
- * the options stay correct and up-to-date.
+ * This should probably be sucked out of the WSDL file, to be sure the options
+ * stay correct and up-to-date.
  *
  * @return
  *   An array of human-friendly names for the different FedEx service codes.
@@ -900,8 +900,8 @@ function _uc_fedex_express_services() {
 /**
  * Convenience function to get FedEx codes for their Freight services.
  *
- * This should probably be sucked out of the WSDL file, to be sure
- * the options stay correct and up-to-date.
+ * This should probably be sucked out of the WSDL file, to be sure the options
+ * stay correct and up-to-date.
  *
  * @return
  *   An array of human-friendly names for the different FedEx service codes.
@@ -950,8 +950,8 @@ function _uc_fedex_shipment_special_types() {
 /**
  * Convenience function to get FedEx codes for dropoff and pickup.
  *
- * This should probably be sucked out of the WSDL file, to be sure
- * the options stay correct and up-to-date.
+ * This should probably be sucked out of the WSDL file, to be sure the options
+ * stay correct and up-to-date.
  *
  * @return
  *   An array of human-friendly names for the different FedEx pickup/dropoff
@@ -971,8 +971,8 @@ function _uc_fedex_dropoff_types() {
 /**
  * Prints SOAP request and response, iff allowed by user access permissions.
  *
- * To view transaction details, set display debug TRUE in
- * admin/store/settings/quotes/edit
+ * To view transaction details, set display debug TRUE on the settings page at
+ * admin/store/settings/quotes/settings.
  *
  * @param $client
  *   SOAP client object containing transaction history.
@@ -1005,15 +1005,15 @@ function theme_uc_fedex_option_label($variables) {
   $service  = $variables['service'];
   $packages = $variables['packages'];
 
-  // Start with FedEx logo
+  // Start with FedEx logo.
   $output  = '<img class="fedex-logo" src="' . base_path() . drupal_get_path('module', 'uc_fedex') . '/uc_fedex_logo.gif" alt="FedEx Logo" />'
 ;
 
   // Add FedEx service name, removing the first six characters
-  // (== 'FedEx ') because these replicate the logo image
+  // (== 'FedEx ') because these replicate the logo image.
   $output .= substr($service, 6);
 
-  // Add package information
+  // Add package information.
   $output .= ' ('. format_plural(count($packages), '1 package', '@count packages') .')';
 
   return $output;

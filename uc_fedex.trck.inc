@@ -5,7 +5,7 @@
  * FedEx Web Services Rate / Available Services Quote.
  *
  * Shipping quote module that interfaces with the FedEx Web Services API
- * to get rates for small package shipments.  Implements a SOAP Web Service
+ * to get rates for small package shipments. Implements a SOAP Web Service
  * client.
  *
  * @author Tim Rohaly.    <http://drupal.org/user/202830>
@@ -33,7 +33,7 @@
 function uc_fedex_tracking_request($tracking_number) {
 
   // Set up SOAP call.
-  // Allow tracing so details of request can be retrieved for error logging
+  // Allow tracing so details of request can be retrieved for error logging.
   $client = new SoapClient(
     drupal_get_path('module', 'uc_fedex') .
       '/wsdl-' . variable_get('uc_fedex_server_role', 'testing') .
@@ -41,7 +41,7 @@ function uc_fedex_tracking_request($tracking_number) {
     array('trace' => 1)
   );
 
-  // FedEx user key and password filled in by user on admin form
+  // FedEx user key and password filled in by user on admin form.
   $request['WebAuthenticationDetail'] = array(
     'UserCredential' => array(
       'Key'      => variable_get('uc_fedex_user_credential_key', 0),
@@ -49,18 +49,18 @@ function uc_fedex_tracking_request($tracking_number) {
     )
   );
 
-  // FedEx account and meter number filled in by user on admin form
+  // FedEx account and meter number filled in by user on admin form.
   $request['ClientDetail'] = array(
       'AccountNumber' => variable_get('uc_fedex_account_number', 0),
       'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
   );
 
-  // Optional parameter, contains anything
+  // Optional parameter, contains anything.
   $request['TransactionDetail'] = array(
     'CustomerTransactionId' => '*** Track Service Request v4 from Ubercart ***'
   );
 
-  // Track Request v4.0.0
+  // Track Request v4.0.0.
   $request['Version'] = array(
     'ServiceId'    => 'trck',
     'Major'        => '4',
@@ -68,17 +68,17 @@ function uc_fedex_tracking_request($tracking_number) {
     'Minor'        => '0',
   );
 
-  // Tracking Number
+  // Tracking Number.
   $request['PackageIdentifier'] = array(
     'Value' => $tracking_number,
     'Type'  => 'TRACKING_NUMBER_OR_DOORTAG',
   );
 
-  // Include Details
+  // Include Details.
   $request['IncludeDetailedScans'] = TRUE;
 
   //
-  // Send the SOAP request to the FedEx server
+  // Send the SOAP request to the FedEx server.
   //
   try {
     $response = $client->track($request);
