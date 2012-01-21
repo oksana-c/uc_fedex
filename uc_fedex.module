@@ -1006,8 +1006,12 @@ function theme_uc_fedex_option_label($variables) {
   $packages = $variables['packages'];
 
   // Start with FedEx logo.
-  $output  = '<img class="fedex-logo" src="' . base_path() . drupal_get_path('module', 'uc_fedex') . '/uc_fedex_logo.gif" alt="FedEx Logo" />'
-;
+  $output  = theme('image', array(
+    'path' => drupal_get_path('module', 'uc_fedex') . '/uc_fedex_logo.gif',
+    'alt' => 'FedEx logo',
+    'title' => '',
+    'attributes' => array('class' => 'fedex-logo')
+  ));
 
   // Add FedEx service name, removing the first six characters
   // (== 'FedEx ') because these replicate the logo image.
