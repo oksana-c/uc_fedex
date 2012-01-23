@@ -37,7 +37,7 @@ function uc_fedex_tracking_request($tracking_number) {
   $client = new SoapClient(
     drupal_get_path('module', 'uc_fedex') .
       '/wsdl-' . variable_get('uc_fedex_server_role', 'testing') .
-      '/TrackService_v4.wsdl',
+      '/TrackService_v5.wsdl',
     array('trace' => 1)
   );
 
@@ -57,13 +57,13 @@ function uc_fedex_tracking_request($tracking_number) {
 
   // Optional parameter, contains anything.
   $request['TransactionDetail'] = array(
-    'CustomerTransactionId' => '*** Track Service Request v4 from Ubercart ***'
+    'CustomerTransactionId' => '*** Track Service Request v5 from Ubercart ***'
   );
 
-  // Track Request v4.0.0.
+  // Track Request v5.0.0.
   $request['Version'] = array(
     'ServiceId'    => 'trck',
-    'Major'        => '4',
+    'Major'        => '5',
     'Intermediate' => '0',
     'Minor'        => '0',
   );
