@@ -152,16 +152,6 @@ function uc_fedex_uc_shipping_type() {
  *   Array of FedEx shipping services.
  */
 function uc_fedex_uc_shipping_method() {
-  $enabled = variable_get('uc_quote_enabled', array()) + array(
-    'fedex_ground'  => FALSE,
-    'fedex'         => FALSE,
-    'fedex_freight' => FALSE,
-  );
-  $weight  = variable_get('uc_quote_method_weight', array()) + array(
-    'fedex_ground'  => 0,
-    'fedex'         => 1,
-    'fedex_freight' => 2,
-  );
   $operations = array(
     'configure' => array(
       'title' => t('configure'),
@@ -186,8 +176,6 @@ function uc_fedex_uc_shipping_method() {
         'file'      => 'uc_fedex.ship.inc',
         'pkg_types' => _uc_fedex_package_types(),
       ),
-      'enabled'    => $enabled['fedex_ground'],
-      'weight'     => $weight['fedex_ground'],
     ),
     'fedex' => array(
       'id'         => 'fedex',
@@ -205,8 +193,6 @@ function uc_fedex_uc_shipping_method() {
         'file'      => 'uc_fedex.ship.inc',
         'pkg_types' => _uc_fedex_package_types(),
       ),
-      'enabled'    => $enabled['fedex'],
-      'weight'     => $weight['fedex'],
     ),
     'fedex_freight' => array(
       'id'         => 'fedex_freight',
@@ -218,8 +204,6 @@ function uc_fedex_uc_shipping_method() {
         'callback'     => 'uc_fedex_quote',
         'accessorials' => _uc_fedex_freight_services(),
       ),
-      'enabled'    => $enabled['fedex_freight'],
-      'weight'     => $weight['fedex_freight'],
     ),
   );
 
