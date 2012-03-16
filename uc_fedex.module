@@ -105,11 +105,11 @@ function uc_fedex_cron() {
 function uc_fedex_theme() {
   return array(
     'uc_fedex_option_label' => array(
-      'file'      => 'uc_fedex.module',
       'variables' => array(
         'service'  => NULL,
         'packages' => NULL,
       ),
+      'file'      => 'uc_fedex.module',
     ),
     'uc_fedex_confirm_shipment' => array(
       'render element' => 'form',

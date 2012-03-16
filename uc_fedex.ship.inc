@@ -34,16 +34,16 @@
  */
 function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_service) {
 
-  // Assemble information about origin
+  // Assemble information about origin.
   $country = uc_get_country_data(array('country_id' => $origin->country));
   $origin->country_iso_code_2       = $country[0]['country_iso_code_2'];
 
-  // Assemble information about destination
+  // Assemble information about destination.
   $country = uc_get_country_data(array('country_id' => $destination->country));
   $destination->country_iso_code_2  = $country[0]['country_iso_code_2'];
 
   // Set up SOAP call.
-  // Allow tracing so details of request can be retrieved for error logging
+  // Allow tracing so details of request can be retrieved for error logging.
   $client = new SoapClient(
     drupal_get_path('module', 'uc_fedex') .
       '/wsdl-' . variable_get('uc_fedex_server_role', 'testing') .
@@ -51,7 +51,7 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
     array('trace' => 1)
   );
 
-  // FedEx user key and password filled in by user on admin form
+  // FedEx user key and password filled in by user on admin form.
   $request['WebAuthenticationDetail'] = array(
     'UserCredential' => array(
       'Key'      => variable_get('uc_fedex_user_credential_key', 0),
@@ -59,18 +59,18 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
     )
   );
 
-  // FedEx account and meter number filled in by user on admin form
+  // FedEx account and meter number filled in by user on admin form.
   $request['ClientDetail'] = array(
       'AccountNumber' => variable_get('uc_fedex_account_number', 0),
       'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
   );
 
-  // Optional parameter, contains anything
+  // Optional parameter, contains anything.
   $request['TransactionDetail'] = array(
     'CustomerTransactionId' => '*** Shipping Request v7 from Ubercart ***'
   );
 
-  // Shipping Request v7.0.0
+  // Shipping Request v7.0.0.
   $request['Version'] = array(
     'ServiceId'    => 'ship',
     'Major'        => '7',
@@ -78,7 +78,7 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
     'Minor'        => '0',
   );
 
-  // Timestamp
+  // Timestamp.
   $request['RequestedShipment']['ShipTimestamp'] = date('c');
 
   // Drupal 6.x version of format_date() doesn't support 'c', so until
@@ -86,22 +86,22 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
   // timezone, though.
   //$request['RequestedShipment']['ShipTimestamp'] = format_date(time(), 'custom', 'c');
 
-  // Set Pickup/Dropoff type
+  // Set Pickup/Dropoff type.
   $request['RequestedShipment']['DropoffType'] = variable_get('uc_fedex_dropoff_type', 'REGULAR_PICKUP');
 
-  // Set Packaging type
+  // Set Packaging type.
   // First element of the packages array is used because all packages
-  // in a multi-package shipment must have the same packaging type
+  // in a multi-package shipment must have the same packaging type.
   $request['RequestedShipment']['PackagingType'] = reset($packages)->pkg_type;
 
-  // Set Service
+  // Set Service.
   $request['RequestedShipment']['ServiceType']   = $fedex_service;
 
   $street_lines   = array();
   $street_lines[] = $origin->street1;
   if (!empty($origin->street2)) $street_lines[] = $origin->street2;
 
-  // Get address
+  // Get address.
   $request['RequestedShipment']['Shipper'] = array(
     'Contact' => array(
       'CompanyName' => $origin->company,
@@ -120,7 +120,7 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
   $street_lines[] = $destination->street1;
   if (!empty($destination->street2)) $street_lines[] = $destination->street2;
 
-  // Grab details of package destination
+  // Grab details of package destination.
   $request['RequestedShipment']['Recipient'] = array(
     'Contact' => array(
       'PersonName'  => $destination->first_name . ' ' . $destination->last_name,
@@ -136,12 +136,12 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
       'Residential'         => $destination->residential,
     )
   );
-  // CompanyName needs to be unset if empty
+  // CompanyName needs to be unset if empty.
   if (empty($destination->company)) {
     unset($request['RequestedShipment']['Recipient']['Contact']['CompanyName']);
   }
 
-  // Label specifications
+  // Label specifications.
   $request['RequestedShipment']['LabelSpecification'] = array(
     'LabelFormatType'          => 'COMMON2D',
     'ImageType'                => variable_get('uc_fedex_label_image_format',
@@ -162,16 +162,16 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
   );
 
   // Note that ACCOUNT rates *require* a valid account number
-  // and return accurate answers on the production server
+  // and return accurate answers only on the production server.
   $request['RequestedShipment']['RateRequestTypes'] = strtoupper(variable_get('uc_fedex_quote_type', 'list'));
 
   $request['RequestedShipment']['PackageDetail'] = 'INDIVIDUAL_PACKAGES';
   $request['RequestedShipment']['PackageCount']  = count($packages);
 
-  // Fill in Package details
+  // Fill in Package details.
   $request['RequestedShipment']['RequestedPackageLineItems'] = array();
 
-  // Determine weight and length units to send to FedEx
+  // Determine weight and length units to send to FedEx.
   $weight_units = strtoupper(variable_get('uc_weight_unit', 'LB'));
   $weight_conversion_factor = 1;
   if ($weight_units != 'LB' && $weight_units != 'KG') {
@@ -186,7 +186,7 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
     $length_units = 'IN';
   }
 
-  // Iterate over $packages to account for multi-package shipments
+  // Iterate over $packages to account for multi-package shipments.
   $sequence = 0;
   $package_properties = array();
   foreach ($packages as $package) {
@@ -196,7 +196,7 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
       'CustomerReferences' => array(
         '0' => array(
           'CustomerReferenceType' => 'INVOICE_NUMBER',
-          // Gag - shouldn't be getting $order_id out of _SESSION
+          // Gag - shouldn't be getting $order_id out of _SESSION.
           'Value'                 => $_SESSION['fedex']['order_id'],
         ),
         '1' => array(
@@ -204,12 +204,12 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
           'Value'                 => $_SESSION['fedex']['reference'],
         ),
       ),
-      // Weights must be rounded up to nearest integer value
+      // Weights must be rounded up to nearest integer value.
       'Weight' => array(
         'Value'  => ceil($package->weight * $weight_conversion_factor),
         'Units'  => $weight_units,
       ),
-      // Lengths must be rounded up to nearest integer value
+      // Lengths must be rounded up to nearest integer value.
       'Dimensions' => array(
         'Length' => ceil($package->length * $length_conversion_factor),
         'Width'  => ceil($package->width  * $length_conversion_factor),
@@ -222,7 +222,7 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
       unset($package_properties[$sequence]['Dimensions']);
     }
 
-    // Add Insurance if requested
+    // Add Insurance if requested.
     if (variable_get('uc_fedex_insurance', FALSE)) {
       $package_properties[$sequence]['InsuredValue'] = array(
         'Amount'   => $package->value,
@@ -230,17 +230,17 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
       );
     }
 
-    // Multi-package shipments need to reference master tracking #
+    // Multi-package shipments need to reference master tracking number.
     if ($sequence > 1) {
       $request['RequestedShipment']['MasterTrackingId']  = $master_tracking_id;
     }
 
-    // Fill in SOAP request with $package_properties
+    // Fill in SOAP request with $package_properties.
     $request['RequestedShipment']['RequestedPackageLineItems'][0] = $package_properties[$sequence];
 
     //
     // For Multi-Package shipments, need to send one SOAP request
-    // *per package* to the FedEx server
+    // *per package* to the FedEx server.
     //
     try {
       $response[$sequence] = $client->processShipment($request);
@@ -249,7 +249,7 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
           $response[$sequence]->HighestSeverity != 'ERROR')     {
         print_request_response($client);
 
-        // Save master tracking # to use for remaining package in shipment
+        // Save master tracking # to use for remaining package in shipment.
         if ($sequence == 1 && count($packages) > 1) {
           $master_tracking_id = $response[$sequence]->CompletedShipmentDetail->MasterTrackingId;
         }
@@ -355,19 +355,19 @@ function theme_uc_fedex_confirm_shipment($variables) {
  * @see uc_fedex_confirm_shipment()
  */
 function uc_fedex_confirm_shipment_submit($form, &$form_state) {
-  // Recover shipment data from session
+  // Recover shipment data from session.
   $order_id    = $_SESSION['fedex']['order_id'];
   $packages    = $_SESSION['fedex']['packages'];
   $origin      = $_SESSION['fedex']['origin'];
   $destination = $_SESSION['fedex']['destination'];
 
   //
-  // Assemble the label request and send it off to FedEx
+  // Assemble the label request and send it off to FedEx.
   //
   $mp_response = uc_fedex_shipment_request($_SESSION['fedex']['packages'], $origin, $destination, $_SESSION['fedex']['service']);
 
   //
-  // Loop over responses, to handle case of multi-package shipments
+  // Loop over responses, to handle case of multi-package shipments.
   //
   foreach ($mp_response as $response) {
     // Package tracking numbers
@@ -378,17 +378,17 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
     else {
       $exp_delivery[] = array('month' => 0, 'day' => 0, 'year' => 0);
       // Ground and Home Delivery don't have DeliveryDate,
-      // they have TransitTime instead
+      // they have TransitTime instead.
     }
   }
 
-  // Final package in shipment contains summary information
+  // Final package in shipment contains summary information.
   $last_package = end($mp_response);
   $rating = $last_package->CompletedShipmentDetail->ShipmentRating;
-  // Check to see if we're quoting ACCOUNT or LIST rates
+  // Check to see if we're quoting ACCOUNT or LIST rates.
   if (variable_get('uc_fedex_quote_type', 'list') == 'list') {  // LIST rate
     // LIST quotes return ACCOUNT rates (in ShipmentRateDetails[0])
-    // and LIST rates (in ShipmentRateDetails[1])
+    // and LIST rates (in ShipmentRateDetails[1]).
     $ratedetail = $rating->ShipmentRateDetails[1];
   }
   else {  // ACCOUNT rate
@@ -403,7 +403,7 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
   }
   $shipment_charge = $ratedetail->TotalNetCharge;
 
-  // Build $shipment object to return to uc_shipment
+  // Build $shipment object to return to uc_shipment.
   $shipment = new stdClass();
   $shipment->order_id        = $order_id;
   $shipment->origin          = clone($_SESSION['fedex']['origin']);
@@ -423,13 +423,13 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
                                                     $exp_delivery[0]['day'],
                                                     $exp_delivery[0]['year']);
 
-  // Loop over packages in shipment to store labels and tracking numbers
+  // Loop over packages in shipment to store labels and tracking numbers.
   foreach ($mp_response as $package_results) {
     $package =& current($shipment->packages);
     $package->tracking_number = (string) $package_results->CompletedShipmentDetail->CompletedPackageDetails->TrackingIds->TrackingNumber;
 
     $label_image = $package_results->CompletedShipmentDetail->CompletedPackageDetails->Label->Parts->Image;
-    // Save the label
+    // Save the label.
     $directory = 'public://fedex_labels';
     if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
       $label_path = $directory . '/label-' . $package->tracking_number . '.' . strtolower(variable_get('uc_fedex_label_image_format', 'PDF'));
@@ -495,7 +495,7 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
   $packages  = array();
   $addresses = array();
 
-  // Container for package data
+  // Container for package data.
   $form['packages'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('Packages'),
@@ -512,14 +512,14 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
       }
 
       // Create list of products and get a representative product (last one in
-      // the loop) to use for some default values
+      // the loop) to use for some default values.
       $product_list = array();
       $declared_value = 0;
       foreach ($package->products as $product) {
         $product_list[]  = $product->qty . ' x ' . $product->model;
         $declared_value += $product->qty * $product->price;
       }
-      // Use last product in package to determine package type
+      // Use last product in package to determine package type.
       $fedex_data = db_query("SELECT pkg_type FROM {uc_fedex_products} WHERE nid = :nid", array(':nid' => $product->nid))->fetchAssoc();
       $product->fedex = $fedex_data;
       $pkg_form = array(
@@ -627,12 +627,12 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
 
   $form = array_merge($form, uc_shipping_address_form($form, $form_state, $addresses, $order));
 
-  // Mark fields needed by the FedEx API as 'required'
+  // Mark fields needed by the FedEx API as 'required'.
   foreach (array('email', 'last_name', 'phone', 'street1', 'city', 'zone', 'country', 'postal_code') as $field) {
     $form['destination']['delivery_address'][$field]['#required'] = TRUE;
   }
 
-  // Allow selection of address type
+  // Allow selection of address type.
   $form['destination']['delivery_residential'] = array(
     '#type'          => 'radios',
     '#title'         => t('Address type'),
@@ -644,7 +644,7 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
     '#required'      => TRUE,
   );
 
-  // Determine shipping option chosen by the customer
+  // Determine shipping option chosen by the customer.
   $method  = $order->quote['method'];
   $methods = module_invoke_all('uc_shipping_method');
   if (isset($methods[$method])) {
@@ -652,14 +652,14 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
     $method   = $services[$order->quote['accessorials']];
   }
 
-  // Container for shipment data
+  // Container for shipment data.
   $form['shipment'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('Shipment data'),
     '#collapsible' => TRUE,
   );
 
-  // Inform user of customer's shipping choice
+  // Inform user of customer's shipping choice.
   $form['shipment']['shipping_choice'] = array(
     '#type'   => 'markup',
     '#prefix' => '<div>',
@@ -668,7 +668,7 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
   );
 
   // Pass shipping charge paid information on to validation function so it
-  // can be displayed alongside actual costs
+  // can be displayed alongside actual costs.
   $form['shipment']['paid'] = array(
     '#type'  => 'value',
     '#value' => uc_currency_format($order->quote['rate']),
@@ -768,12 +768,12 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
   $origin->email = $form_state['values']['pickup_email'];
 
   // Populate $_SESSION variable with information we'll need
-  // later to generate the label
+  // later to generate the label.
   $_SESSION['fedex']           = array();
   $_SESSION['fedex']['origin'] = $origin;
 
-  // Determine if address is Residential or Commercial
-  // If Address Validation API is not used or fails, default to form choice
+  // Determine if address is Residential or Commercial.
+  // If Address Validation API is not used or fails, default to form choice.
   $destination->residential = uc_fedex_address_is_residential($destination, $destination->residential, FALSE);
 
   $_SESSION['fedex']['destination'] = $destination;
@@ -797,25 +797,25 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
   $_SESSION['fedex']['order_id']  = $form_state['values']['order_id'];
 
   //
-  // Assemble a quote request and send it off to FedEx
+  // Assemble a quote request and send it off to FedEx.
   //
   $response = uc_fedex_shipment_request($_SESSION['fedex']['packages'], $origin, $destination, $form_state['values']['service']);
 
-  // Response may contain multiple packages
+  // Response may contain multiple packages.
   foreach ($response as $package) {
 
-    // Need to fail validation if SOAP request returns ERROR
+    // Need to fail validation if SOAP request returns ERROR.
     if ($package->HighestSeverity == 'FAILURE' ||
         $package->HighestSeverity == 'ERROR')     {
       form_set_error('uc_fedex_fulfill_order', $package->Notifications->Message);
     }
 
-    // Shipping Charge
+    // Shipping Charge.
     $rating = $package->CompletedShipmentDetail->CompletedPackageDetails->PackageRating;
     // Check to see if we're quoting ACCOUNT or LIST rates
     if (variable_get('uc_fedex_quote_type', 'list') == 'list') {  // LIST rate
       // LIST quotes return ACCOUNT rates (in PackageRateDetails[0])
-      // and LIST rates (in PackageRateDetails[1])
+      // and LIST rates (in PackageRateDetails[1]).
       $ratedetail = $rating->PackageRateDetails[1];
     }
     else {  // ACCOUNT rate
@@ -833,7 +833,7 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
 
   $last_package = end($response);
   $rating = $last_package->CompletedShipmentDetail->ShipmentRating;
-  // Check to see if we're quoting ACCOUNT or LIST rates
+  // Check to see if we're quoting ACCOUNT or LIST rates.
   if (variable_get('uc_fedex_quote_type', 'list') == 'list') {  // LIST rate
     // LIST quotes return ACCOUNT rates (in ShipmentRateDetails[0])
     // and LIST rates (in ShipmentRateDetails[1])
