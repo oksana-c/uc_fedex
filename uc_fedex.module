@@ -19,7 +19,6 @@ define('FEDEX_PACKAGE_WEIGHT_LIMIT_LBS', 150.0);  // 150lbs
 ini_set("soap.wsdl_cache_enabled", "1");
 
 
-
 /******************************************************************************
  * Drupal Hooks                                                               *
  ******************************************************************************/
@@ -59,7 +58,6 @@ function uc_fedex_menu() {
   return $items;
 }
 
-
 /**
  * Implements hook_init().
  */
@@ -71,7 +69,6 @@ function uc_fedex_init() {
   // Address Validation routines.
   module_load_include('inc', 'uc_fedex', 'uc_fedex.aval');
 }
-
 
 /**
  * Implements hook_cron().
@@ -97,7 +94,6 @@ function uc_fedex_cron() {
     }
   }
 }
-
 
 /**
  * Implements hook_theme().
@@ -143,7 +139,6 @@ function uc_fedex_uc_shipping_type() {
 
   return $types;
 }
-
 
 /**
  * Implements Ubercart's hook_uc_shipping_method().
@@ -209,7 +204,6 @@ function uc_fedex_uc_shipping_method() {
 
   return $methods;
 }
-
 
 /**
  * Implements Ubercart's hook_uc_store_status().
@@ -397,7 +391,6 @@ function uc_fedex_quote($products, $details, $method) {
 
   return $quotes;
 }
-
 
 /**
  * Constructs and executes a SOAP RateAvailabilityService request.
@@ -594,7 +587,6 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   }
 }
 
-
 /**
  * Modifies the rate received from FedEx before displaying to the customer.
  *
@@ -625,7 +617,6 @@ function uc_fedex_rate_markup($rate) {
   }
 }
 
-
 /**
  * Modifies the weight of shipment before sending to FedEx for a quote.
  *
@@ -655,7 +646,6 @@ function uc_fedex_weight_markup($weight) {
     return $weight;
   }
 }
-
 
 /**
  * Packages products into boxes.
@@ -820,7 +810,6 @@ function _uc_fedex_package_products($products) {
   return $packages;
 }
 
-
 /**
  * Convenience function to get FedEx codes for their package types.
  *
@@ -839,7 +828,6 @@ function _uc_fedex_package_types() {
   );
 }
 
-
 /**
  * Convenience function to get FedEx codes for their Ground services.
  *
@@ -855,7 +843,6 @@ function _uc_fedex_ground_services() {
     'GROUND_HOME_DELIVERY' => t('FedEx Home Delivery'),
   );
 }
-
 
 /**
  * Convenience function to get FedEx codes for their Express services.
@@ -882,7 +869,6 @@ function _uc_fedex_express_services() {
   );
 }
 
-
 /**
  * Convenience function to get FedEx codes for their Freight services.
  *
@@ -902,7 +888,6 @@ function _uc_fedex_freight_services() {
     'INTERNATIONAL_DISTRIBUTION_FREIGHT' => t('FedEx International Distribution Freight'),
   );
 }
-
 
 /**
  * Convenience function to get FedEx codes for special services options.
@@ -932,7 +917,6 @@ function _uc_fedex_shipment_special_types() {
   );
 }
 
-
 /**
  * Convenience function to get FedEx codes for dropoff and pickup.
  *
@@ -953,7 +937,6 @@ function _uc_fedex_dropoff_types() {
   );
 }
 
-
 /**
  * Prints SOAP request and response, iff allowed by user access permissions.
  *
@@ -973,7 +956,6 @@ function print_request_response($client) {
                        check_plain($client->__getLastResponse()) . '</pre>');
   }
 }
-
 
 /**
  * Theme function to format the FedEx service name and rate amount

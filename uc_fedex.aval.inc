@@ -135,7 +135,6 @@ function uc_fedex_address_request($address) {
   }
 }
 
-
 /**
  * Convenience function to determine if an address is Residential or Commercial.
  *
@@ -195,7 +194,6 @@ function uc_fedex_address_is_residential($address, $default = TRUE, $verbose = F
   return $default;
 }
 
-
 /**
  * Implements hook_form_[form_id]_alter().
  *
@@ -217,7 +215,6 @@ function uc_fedex_form_uc_cart_checkout_form_alter(&$form, &$form_state) {
     //$form['#validate'][] = 'uc_fedex_address_validate';
   }
 }
-
 
 /**
  * Form validation function to validate delivery address entered into

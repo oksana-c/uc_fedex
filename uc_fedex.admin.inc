@@ -362,7 +362,6 @@ function uc_fedex_admin_settings() {
   return $form;
 }
 
-
 /**
  * Validation handler for uc_fedex_admin_settings form.
  *

@@ -273,7 +273,6 @@ function uc_fedex_shipment_request($packages, $origin, $destination, $fedex_serv
   return $response;
 }
 
-
 /**
  * Last chance for user to review shipment.
  *
@@ -288,7 +287,6 @@ function uc_fedex_confirm_shipment($form, &$form_state, $order) {
   );
   return $form;
 }
-
 
 /**
  * Displays final shipment information for review.
@@ -347,7 +345,6 @@ function theme_uc_fedex_confirm_shipment($variables) {
 
   return $output;
 }
-
 
 /**
  * Generates shipping labels.
@@ -454,7 +451,6 @@ function uc_fedex_confirm_shipment_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/store/orders/' . $order_id . '/shipments';
 }
 
-
 /**
  * Displays the shipping label for printing.
  *
@@ -472,7 +468,6 @@ function uc_fedex_label_image() {
 
   file_transfer($image_path, file_get_content_headers($image_path));
 }
-
 
 /**
  * Shipment creation callback.
@@ -720,7 +715,6 @@ function uc_fedex_fulfill_order($form, &$form_state, $order, $package_ids) {
   return $form;
 }
 
-
 /**
  * Passes final information into shipment object.
  *
@@ -858,7 +852,6 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
   $_SESSION['fedex']['rate']['amount']   = (string) $shipment_charge->Amount;
 }
 
-
 /**
  * Passes final information into shipment object.
  *
@@ -868,7 +861,6 @@ function uc_fedex_fulfill_order_validate($form, &$form_state) {
 function uc_fedex_fulfill_order_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/store/orders/' . $form_state['values']['order_id'] . '/shipments/fedex';
 }
-
 
 /**
  * Convenience function to get FedEx codes for payor.
@@ -883,7 +875,6 @@ function _uc_fedex_payor_types() {
     'THIRD_PARTY' => t('Shipping billed to third party'),
   );
 }
-
 
 /**
  * Convenience function to get FedEx codes for label image format.
@@ -901,7 +892,6 @@ function _uc_fedex_label_image_types() {
   );
 }
 
-
 /**
  * Convenience function to get FedEx codes for label orientation.
  *
@@ -914,7 +904,6 @@ function _uc_fedex_label_orientation_types() {
     'TOP_EDGE_OF_TEXT_FIRST'    => t('TOP_EDGE_OF_TEXT_FIRST'),
   );
 }
-
 
 /**
  * Convenience function to get FedEx codes for label paper stock type.
