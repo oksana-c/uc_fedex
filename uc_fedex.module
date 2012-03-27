@@ -68,7 +68,7 @@ function uc_fedex_init() {
 // Can we conditionally load the address validation code based on
 // variable_get('uc_fedex_address_validation', FALSE) ?
 
-  // Address Validation routines
+  // Address Validation routines.
   module_load_include('inc', 'uc_fedex', 'uc_fedex.aval');
 }
 
@@ -83,7 +83,7 @@ function uc_fedex_init() {
 function uc_fedex_cron() {
   $cutoff = REQUEST_TIME - variable_get('uc_fedex_label_lifetime', 604800);
   if ($cutoff == REQUEST_TIME) {
-    // Label lifetime is set to 0, meaning never delete
+    // Label lifetime is set to 0, meaning never delete.
     return;
   }
 
@@ -313,8 +313,8 @@ function uc_fedex_quote($products, $details, $method) {
   // If Address Validation API is not used or fails, default to store default.
   $destination->residential = uc_fedex_address_is_residential($destination, variable_get('uc_fedex_residential_quotes', 1), $debug);
 
-  // Call the method that does the actual SOAP request to the FedEx Server
-  // Response contains all available services and rates
+  // Call the method that does the actual SOAP request to the FedEx Server.
+  // Response contains all available services and rates.
   $response = uc_fedex_rate_request($packages, $origin, $destination);
 
   // Construct an array containing only those services that the store admin
@@ -422,7 +422,7 @@ function uc_fedex_rate_request($packages, $origin, $destination) {
   // Allow tracing so details of request can be retrieved for error logging.
   $client = new SoapClient(drupal_get_path('module', 'uc_fedex')
               . '/wsdl-' . variable_get('uc_fedex_server_role', 'testing')
-              . '/RateService_v10.wsdl', array('trace' => 1));
+              . '/RateService_v10.wsdl', array('trace' => TRUE));
 
   // FedEx user key and password filled in by user on admin form.
   $request['WebAuthenticationDetail'] = array(
