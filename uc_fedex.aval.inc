@@ -5,7 +5,7 @@
  * FedEx Web Services Rate / Available Services Quote.
  *
  * Shipping quote module that interfaces with the FedEx Web Services API
- * to get rates for small package shipments. Implements a SOAP Web Service
+ * to get rates for small package shipments.  Implements a SOAP Web Service
  * client.
  *
  * @author Tim Rohaly.    <http://drupal.org/user/202830>
@@ -19,9 +19,10 @@
 
 /**
  * Constructs and executes a SOAP AddressValidationService request.
+ * Returns Address Validation information.
  *
  * SOAP call parameters are set in the order they appear in the WSDL file.
- * Returns Address Validation information.
+ * Associative array of DOM returned.
  *
  * @param $address
  *   Object containing Ubercart address information.
@@ -52,8 +53,8 @@ function uc_fedex_address_request($address) {
 
   // FedEx account and meter number filled in by user on admin form.
   $request['ClientDetail'] = array(
-    'AccountNumber' => variable_get('uc_fedex_account_number', 0),
-    'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
+      'AccountNumber' => variable_get('uc_fedex_account_number', 0),
+      'MeterNumber'   => variable_get('uc_fedex_meter_number', 0),
   );
 
   // Optional parameter, contains anything.
@@ -93,10 +94,10 @@ function uc_fedex_address_request($address) {
   if (!empty($address->street2)) $street_lines[] = $address->street2;
 
   // Get address.
-// CompanyName needs to be unset if empty
+  // CompanyName needs to be unset if empty.
   $request['AddressesToValidate'][] = array(
     'AddressId'   => $address->last_name . ', ' . $address->first_name,
-//  'CompanyName' => $address->company,
+  // 'CompanyName' => $address->company,
     'Address'     => array(
       'StreetLines'         => $street_lines,
       'City'                => $address->city,
@@ -113,7 +114,7 @@ function uc_fedex_address_request($address) {
     $response = $client->addressValidation($request);
 
     if ($response->HighestSeverity != 'FAILURE' &&
-        $response->HighestSeverity != 'ERROR')     {
+        $response->HighestSeverity != 'ERROR') {
       print_request_response($client);
     }
     else {
@@ -161,7 +162,7 @@ function uc_fedex_address_is_residential($address, $default = TRUE, $verbose = F
         empty($address->city)        ||
         empty($address->zone)        ||
         empty($address->postal_code) ||
-        empty($address->country)       ) {
+        empty($address->country)) {
       return $default;
     }
     // Make request to FedEx web service.

@@ -11,7 +11,7 @@
 /**
  * Default FedEx Web Services API settings.
  *
- * Records FedEx account information necessary to use service. Allows testing
+ * Records FedEx account information neccessary to use service. Allows testing
  * or production mode. Configures which FedEx services are quoted to customers.
  *
  * @return
@@ -25,16 +25,6 @@ function uc_fedex_admin_settings() {
   // Label printing routines.
   module_load_include('inc', 'uc_fedex', 'uc_fedex.ship');
 
-  // Put fieldsets into vertical tabs.
-  $form['fedex-settings'] = array(
-    '#type' => 'vertical_tabs',
-    '#attached' => array(
-      'js' => array(
-        'vertical-tabs' => drupal_get_path('module', 'uc_fedex') . '/uc_fedex.admin.js',
-      ),
-    ),
-  );
-
   // Container for credentials forms.
   $form['uc_fedex_credentials'] = array(
     '#type'          => 'fieldset',
@@ -42,7 +32,6 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Account number and authorization information.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
-    '#group'         => 'fedex-settings',
   );
 
   // Form to set the developer key.
@@ -81,12 +70,20 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_credentials']['uc_fedex_server_role'] = array(
     '#type'          => 'select',
     '#title'         => t('FedEx Server Role'),
-    '#description'   => t('Use the Testing server while developing and configuring your site. Switch to the Production server only after you have demostrated that transactions on the Testing server are working and you are ready to go live.'),
+    '#description'   => t('Use the Testing server while developing and configuring your site.  Switch to the Production server only after you have demostrated that transactions on the Testing server are working and you are ready to go live.'),
     '#options'       => array(
       'testing'      => t('Testing'),
       'production'   => t('Production'),
     ),
     '#default_value' => variable_get('uc_fedex_server_role', 'testing'),
+  );
+
+  // Form to set freight account number.
+  $form['uc_fedex_credentials']['uc_fedex_freight_account_number'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('FedEx Freight Account #'),
+    '#default_value' => variable_get('uc_fedex_freight_account_number', 0),
+    '#required'      => FALSE,
   );
 
   // Container for service selection forms.
@@ -95,7 +92,6 @@ function uc_fedex_admin_settings() {
     '#title'         => t('Service Options'),
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
-    '#group'         => 'fedex-settings',
   );
 
   // Form to restrict FedEx Ground services available to customer.
@@ -107,6 +103,20 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Select the FedEx Ground services customers are allowed to use.'),
   );
 
+  if (module_exists('rules')) {
+    $form['uc_fedex_service_selection']['uc_fedex_ground_conditions'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('FedEx Ground service conditions'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $conditions = rules_config_load('get_quote_from_fedex_ground');
+    if ($conditions) {
+      $conditions->form($form['uc_fedex_service_selection']['uc_fedex_ground_conditions'], $form_state);
+    }
+  }
+
+
   // Form to restrict FedEx Express services available to customer.
   $form['uc_fedex_service_selection']['uc_fedex_express_services'] = array(
     '#type'          => 'checkboxes',
@@ -116,17 +126,21 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Select the FedEx Express services customers are allowed to use.'),
   );
 
-  // Form to restrict FedEx Express Freight services available to customer.
-  $form['uc_fedex_service_selection']['uc_fedex_freight_services'] = array(
-    '#type'          => 'checkboxes',
-    '#title'         => t('FedEx Express Freight Services'),
-    '#default_value' => variable_get('uc_fedex_freight_services', _uc_fedex_freight_services()),
-    '#options'       => _uc_fedex_freight_services(),
-    '#description'   => t('Select the FedEx Express Freight services customers are allowed to use.'),
-  );
+  if (module_exists('rules')) {
+    $form['uc_fedex_service_selection']['uc_fedex_express_conditions'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('FedEx Express service conditions'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $conditions = rules_config_load('get_quote_from_fedex');
+    if ($conditions) {
+      $conditions->form($form['uc_fedex_service_selection']['uc_fedex_express_conditions'], $form_state);
+    }
+  }
 
   // Form to restrict FedEx Freight services available to customer.
-  $form['uc_fedex_service_selection']['uc_fedex_freight'] = array(
+  $form['uc_fedex_service_selection']['uc_fedex_freight_services'] = array(
     '#type'          => 'checkboxes',
     '#title'         => t('FedEx Freight Services'),
     '#default_value' => variable_get('uc_fedex_freight_services', _uc_fedex_freight_services()),
@@ -134,13 +148,18 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Select the FedEx Freight services customers are allowed to use.'),
   );
 
-  // Form to set freight account number.
-  $form['uc_fedex_credentials']['uc_fedex_freight_account_number'] = array(
-    '#type'          => 'textfield',
-    '#title'         => t('FedEx Freight Account #'),
-    '#default_value' => variable_get('uc_fedex_freight_account_number', 0),
-    '#required'      => FALSE,
-  );
+  if (module_exists('rules')) {
+    $form['uc_fedex_service_selection']['uc_fedex_freight_conditions'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('FedEx Freight service conditions'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $conditions = rules_config_load('get_quote_from_fedex_freight');
+    if ($conditions) {
+      $conditions->form($form['uc_fedex_service_selection']['uc_fedex_freight_conditions'], $form_state);
+    }
+  }
 
   // Container for quote options forms.
   $form['uc_fedex_quote_options'] = array(
@@ -149,18 +168,26 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Preferences that affect computation of quote.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
-    '#group'         => 'fedex-settings',
   );
 
-  // Form to set choose between LIST quotes and ACCOUNT quotes.
-  // ***Defaults to LIST!***
+  /* Form to set choose between LIST quotes and ACCOUNT quotes
+   * ***Defaults to LIST!***
+   * Valid values:
+   * LIST — Returns standard list in response.
+   * PREFERRED — Returns rates in currency specified in the
+   * PreferredCurrency element.
+   * NONE — Returns account specific rates in response.
+   *
+   * We do not include PREFERRED option in this integration
+   * as it does not provide value to the client.
+   */
   $form['uc_fedex_quote_options']['uc_fedex_quote_type'] = array(
     '#type'          => 'select',
     '#title'         => t('FedEx Quote Type'),
-    '#description'   => t('Choose to present the customer with FedEx list prices or your discounted FedEx account prices. LIST prices only exist for US shipments - if you specify LIST for international shipments you will not receive any quotes. Note that ACCOUNT prices are accurate only on the PRODUCTION server!'),
+    '#description'   => t('Choose to present the customer with FedEx list prices or your discounted FedEx account prices. LIST prices only exist for US shipments - if you specify LIST for international shipments you will not receive any quotes.  Note that ACCOUNT prices are accurate only on the PRODUCTION server!'),
     '#options'       => array(
       'list'    => t('List Prices'),
-      'account' => t('Discount Account Prices'),
+      'none' => t('Discount Account Prices'),
     ),
     '#default_value' => variable_get('uc_fedex_quote_type', 'list'),
   );
@@ -171,7 +198,7 @@ function uc_fedex_admin_settings() {
     '#title'         => t('FedEx Pickup/Dropoff Options'),
     '#default_value' => variable_get('uc_fedex_dropoff_type', _uc_fedex_dropoff_types()),
     '#options'       => _uc_fedex_dropoff_types(),
-    '#description'   => t('Pickup/Dropoff options. It is assumed that all your packages are using the same method.'),
+    '#description'   => t('Pickup/Dropoff options.  It is assumed that all your packages are using the same method.'),
   );
 
   // Form to select FedEx packaging to use.
@@ -180,7 +207,7 @@ function uc_fedex_admin_settings() {
     '#title'         => t('FedEx Package Type'),
     '#default_value' => variable_get('uc_fedex_package_type', _uc_fedex_package_types()),
     '#options'       => _uc_fedex_package_types(),
-    '#description'   => t('Package Type. It is assumed that all your packages are using the same packaging. Note that FedEx-supplied packaging material may only be used for certain FedEx services.'),
+    '#description'   => t('Package Type.  It is assumed that all your packages are using the same packaging.<br/><i>NOTE: This setting does not apply to Freight Quotes.</i>'),
   );
 
   // Form to select packaging type.
@@ -200,19 +227,94 @@ function uc_fedex_admin_settings() {
     '#type'          => 'checkbox',
     '#title'         => t('Add Insurance to shipping quote'),
     '#default_value' => variable_get('uc_fedex_insurance', FALSE),
-    '#description'   => t('When enabled and when the below conditions are met, the quote presented to the customer will include the cost of insurance for the full sales price of all products in the order.'),
+    '#description'   => t('When enabled, products are insured for their full value.'),
   );
-  $form['uc_fedex_quote_options']['insurance_conditions'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('FedEx insurance conditions'),
-    '#description' => t("By default, when insurance is enabled, all orders will be insured. If you don't want insurance on all orders, you may define conditions here to select which orders are insured."),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+
+  // Form to select FedEx Freight Class.
+  $form['uc_fedex_quote_options']['uc_fedex_freight_class'] = array(
+    '#type'          => 'select',
+    '#title'         => t('FedEx Freight Class'),
+    '#default_value' => variable_get('uc_fedex_freight_class', 'CLASS_070'),
+    '#options'       => _uc_fedex_freight_class_list(),
+    '#description'   => t('Freight Class.  It is assumed that all your packages/shipments are using the same class.'),
   );
-  $conditions = rules_config_load('fedex_include_insurance');
-  if ($conditions) {
-    $conditions->form($form['uc_fedex_quote_options']['insurance_conditions'], $form_state);
-  }
+
+  $length_units = array(
+    'in'             => t('Inches'),
+    'ft'             => t('Feet'),
+    'cm'             => t('Centimeters'),
+    'mm'             => t('Millimeters'),
+  );
+
+  // Form to set minimum shipment length that defines when
+  // FedEx Freight quote rates are requested and displayed to the customer.
+  $form['uc_fedex_quote_options']['uc_fedex_freight_min_length_values_title'] = array(
+    "#type"          => 'markup',
+    '#markup'        => '<label>' . t('FedEx Freight Quote - Minimum Length') . '</label>',
+  );
+  $form['uc_fedex_quote_options']['uc_fedex_freight_min_length_values'] = array(
+    '#type'          => 'container',
+    '#attributes'    => array('class' => array('uc-inline-form', 'uc-fedex-inline-form-markup', 'clearfix')),
+  );
+  $form['uc_fedex_quote_options']['uc_fedex_freight_min_length_values']['uc_fedex_freight_min_length'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Length'),
+    '#default_value' => variable_get('uc_fedex_freight_min_length', '9'),
+    '#size'          => 10,
+  );
+  $form['uc_fedex_quote_options']['uc_fedex_freight_min_length_values']['uc_fedex_freight_min_length_units'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Units'),
+    '#default_value' => variable_get('uc_fedex_freight_min_length_units', 'FT'),
+    '#options'       => $length_units,
+  );
+  $form['uc_fedex_quote_options']['uc_fedex_freight_min_length_values_desc'] = array(
+    "#type"          => 'markup',
+    '#markup'        => '<div class="uc-fedex-markup-desc description">' . t('Minimum length of the shipment that will trigger the display of FedEx Freight quote rates.<br/>If left at 0 - FedEx Freight quote rates will be displayed at all times.') . '</div>',
+  );
+
+  // Form to set minimum package number that defines when
+  // FedEx Freight quote rates are requested and displayed to the customer.
+  $form['uc_fedex_quote_options']['uc_fedex_freight_min_pkg_num'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('FedEx Freight - MIN Number of Packages'),
+    '#default_value' => variable_get('uc_fedex_freight_min_pkg_num', ''),
+    '#description'   => t('Minimum number of packages that will trigger display of Freight quotes.'),
+    '#size'          => 10,
+  );
+
+  // Form to set current EXTREME_LENGTH limit for FedEx Freight.
+  $form['uc_fedex_quote_options']['uc_fedex_freight_extreme_length_values_title'] = array(
+    "#type"          => 'markup',
+    '#markup'        => '<label>' . t('FedEx Freight - Extreme Length') . '</label>',
+  );
+
+  $form['uc_fedex_quote_options']['uc_fedex_freight_extreme_length_values'] = array(
+    '#type'          => 'container',
+    '#attributes'    => array('class' => array('uc-inline-form', 'uc-fedex-inline-form-markup', 'clearfix')),
+  );
+  $form['uc_fedex_quote_options']['uc_fedex_freight_extreme_length_values']['uc_fedex_freight_extreme_length'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Length'),
+    '#default_value' => variable_get('uc_fedex_freight_extreme_length', '15'),
+    '#size'          => 10,
+    '#states' => array(
+      // Only make required when Freight Account Number is not empty.
+      'required' => array(
+        ':input[name="uc_fedex_freight_account_number"]' => array('!value' => '0'),
+      ),
+    ),
+  );
+  $form['uc_fedex_quote_options']['uc_fedex_freight_extreme_length_values']['uc_fedex_freight_extreme_length_units'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Units'),
+    '#default_value' => variable_get('uc_fedex_freight_extreme_length_units', 'FT'),
+    '#options'       => $length_units,
+  );
+  $form['uc_fedex_quote_options']['uc_fedex_freight_extreme_length_values_desc'] = array(
+    "#type"          => 'markup',
+    '#markup'        => '<div class="uc-fedex-markup-desc description">' . t('EXTREME_LENGTH limit according to current FedEx Freight regulations.<br/>This value will affect shipping rates and must be updated as soon as new FedEx Freight regulations come in effect.<br/>As of November 2017 - EXTREME_LENGTH surcharges will applied to shipments over 15ft/180in length. Starting January 2, 2017 - 12ft/144in.') . '</div>',
+  );
 
   // Container for markup forms.
   $form['uc_fedex_markups'] = array(
@@ -221,7 +323,6 @@ function uc_fedex_admin_settings() {
     '#description'   => t('Modifiers to the shipping weight and quoted rate.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
-    '#group'         => 'fedex-settings',
   );
 
   // Form to select type of rate markup.
@@ -268,10 +369,9 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_validation'] = array(
     '#type'          => 'fieldset',
     '#title'         => t('Address Validation'),
-    '#description'   => t('Preferences for FedEx Address Validation. Additional permissions from FedEx are required to use this feature.'),
+    '#description'   => t('Preferences for FedEx Address Validation.  Additional permissions from FedEx are required to use this feature.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
-    '#group'         => 'fedex-settings',
   );
 
   // Form to select Residential/Commercial destination address.
@@ -299,7 +399,7 @@ function uc_fedex_admin_settings() {
     '#type'          => 'checkbox',
     '#title'         => t('Enable checkout address validation'),
     '#default_value' => variable_get('uc_fedex_checkout_validation', FALSE),
-    '#description'   => t('When enabled, JavaScript will be used to validate the shipping address entered by the customer on the checkout page. Errors will be flagged immediately, before the order is submitted.'),
+    '#description'   => t('When enabled, JavaScript will be used to validate the shipping address entered by the customer on the checkout page.  Errors will be flagged immediately, before the order is submitted.'),
     '#disabled'      => TRUE,
   );
 
@@ -307,10 +407,9 @@ function uc_fedex_admin_settings() {
   $form['uc_fedex_labels'] = array(
     '#type'          => 'fieldset',
     '#title'         => t('Label Printing'),
-    '#description'   => t('Preferences for FedEx Shipping Label Printing. Additional permissions from FedEx are required to use this feature.'),
+    '#description'   => t('Preferences for FedEx Shipping Label Printing.  Additional permissions from FedEx are required to use this feature.'),
     '#collapsible'   => TRUE,
     '#collapsed'     => TRUE,
-    '#group'         => 'fedex-settings',
   );
 
   // Form to select label image format.
@@ -352,15 +451,9 @@ function uc_fedex_admin_settings() {
   // Register additional validation handler.
   $form['#validate'][] = 'uc_fedex_admin_settings_validate';
 
-  $form = system_settings_form($form);
-
-  // Add Cancel link.
-  $form['actions']['cancel'] = array(
-    '#markup' => l(t('Cancel'), 'admin/store/settings/quotes'),
-  );
-
-  return $form;
+  return system_settings_form($form);
 }
+
 
 /**
  * Validation handler for uc_fedex_admin_settings form.
@@ -387,5 +480,18 @@ function uc_fedex_admin_settings_validate($form, &$form_state) {
 
   if (!is_numeric($form_state['values']['uc_fedex_weight_markup'])) {
     form_set_error('uc_fedex_weight_markup', t('Weight markup must be a numeric value.'));
+  }
+
+  // Add validation for freight variables.
+  if (!is_numeric($form_state['values']['uc_fedex_freight_min_pkg_num']) && !empty($form_state['values']['uc_fedex_freight_min_pkg_num'])) {
+    form_set_error('uc_fedex_freight_min_pkg_num', t('"FedEx Freight - MIN Number of Packages" must be a numeric value.'));
+  }
+
+  if (!is_numeric($form_state['values']['uc_fedex_freight_extreme_length']) || $form_state['values']['uc_fedex_freight_extreme_length'] == 0) {
+    form_set_error('uc_fedex_freight_extreme_length_values][uc_fedex_freight_extreme_length', t('"FedEx Freight - Extreme Length" must be a numeric value and have a value than is greater than 0 when Freight Account Number is used.'));
+  }
+
+  if (!is_numeric($form_state['values']['uc_fedex_freight_min_length'])) {
+    form_set_error('uc_fedex_freight_min_length_values][uc_fedex_freight_min_length', t('"FedEx Freight Quote - Minimum Length" must be a numeric value.'));
   }
 }
