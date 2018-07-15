@@ -9,3 +9,11 @@
 .pane-table .form-item {
   display: inline;
 }
+
+.uc-fedex-inline-form-markup .form-item {
+  margin-bottom: 0;
+}
+
+.uc-fedex-markup-desc.description {
+  margin-bottom: 1.5em;
+}

@@ -93,6 +93,9 @@ function uc_fedex_uninstall() {
   variable_del('uc_fedex_package_type');
   variable_del('uc_fedex_all_in_one');
   variable_del('uc_fedex_insurance');
+  variable_del('uc_fedex_freight_min_length');
+  variable_del('uc_fedex_freight_extreme_length');
+  variable_del('uc_fedex_freight_class');
 
   variable_del('uc_fedex_rate_markup');
   variable_del('uc_fedex_rate_markup_type');
@@ -195,4 +198,18 @@ function uc_fedex_update_6201() {
   }
 
   return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Change the order of shipping method quotes display on checkout.
+ */
+function uc_fedex_update_7201() {
+  variable_set('uc_quote_method_weight', array(
+      'fedex_ground' => '-10',
+      'fedex' => '-9',
+      'fedex_freight' => '-8',
+    )
+  );
 }
